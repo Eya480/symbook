@@ -1,0 +1,76 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}{{ parent() }} - Édition {{ livre.titre }}{% endblock %}
+
+{% block body %}
+<div class="container mt-4">
+    <h1 class="mb-4">Édition du livre <strong>{{ livre.titre }}</strong></h1>
+    
+    <div class="card shadow">
+        <div class="card-body">
+            <form method="post" class="needs-validation" novalidate>
+                <div class="row g-3">
+                    <div class="col-md-6">
+                        <label for="titre" class="form-label">Titre *</label>
+                        <input type="text" class="form-control" id="titre" name="titre" 
+                               value="{{ livre.titre }}" required>
+                        <div class="invalid-feedback">
+                            Le titre est obligatoire
+                        </div>
+                    </div>
+                    
+                    <div class="col-md-6">
+                        <label for="slag" class="form-label">Slug *</label>
+                        <input type="text" class="form-control" id="slag" name="slag" 
+                               value="{{ livre.slag }}" required>
+                    </div>
+                    
+                    <div class="col-12">
+                        <label for="resume" class="form-label">Résumé</label>
+                        <textarea class="form-control" id="resume" name="resume" 
+                                  rows="4">{{ livre.resume }}</textarea>
+                    </div>
+                    
+                    <div class="col-md-4">
+                        <label for="isbn" class="form-label">ISBN</label>
+                        <input type="text" class="form-control" id="isbn" name="isbn" 
+                               value="{{ livre.isbn }}">
+                    </div>
+                    
+                    <div class="col-md-4">
+                        <label for="image" class="form-label">URL de l'image *</label>
+                        <input type="text" class="form-control" id="image" name="image" 
+                               value="{{ livre.image }}" required>
+                    </div>
+                    
+                    <div class="col-md-4">
+                        <label for="editeur" class="form-label">Éditeur</label>
+                        <input type="text" class="form-control" id="editeur" name="editeur" 
+                               value="{{ livre.editeur }}">
+                    </div>
+                    
+                    <div class="col-md-6">
+                        <label for="dateEdition" class="form-label">Date d'édition</label>
+                        <input type="date" class="form-control" id="dateEdition" name="dateEdition" 
+                               value="{{ livre.dateEdition | date('Y-m-d') }}">
+                    </div>
+                    
+                    <div class="col-md-6">
+                        <label for="prix" class="form-label">Prix (€) *</label>
+                        <input type="number" step="0.01" class="form-control" id="prix" name="prix" 
+                               value="{{ livre.prix }}" required>
+                    </div>
+                </div>
+                
+                <div class="mt-4">
+                    <button type="submit" class="btn btn-primary me-2">
+                        <i class="fas fa-save me-1"></i> Enregistrer
+                    </button>
+                  
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+{% endblock %}

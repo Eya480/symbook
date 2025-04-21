@@ -1,0 +1,70 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}
+	{{ parent() }}
+	- Admin
+{% endblock %}
+
+{% block body %}
+<div class="container mt-4">
+    <h1 class="mb-4">La Liste Des Livres</h1>
+	<a href="{{path('admin_livres_create')}}" class="btn btn-primary mt-3" style="float:right;">Ajouter un nouvel livre</a>
+
+
+	<table class="table" id="example">
+		<thead>
+			<tr>
+				<th>Identifiant</th>
+				<th>Titre</th>
+				<th>Prix</th>
+				<th>Editeur</th>
+				<th>Date Edition</th>
+				<th>Catégorie</th>
+				<th>Action</th>
+				<th></th>
+				<th></th>
+			</tr>
+		</thead>
+		<tbody>
+			{% for livre in livres %}
+				<tr>
+					<td>{{ livre.id }}</td>
+					<td>{{ livre.titre }}</td>
+					<td>{{ livre.prix }}
+						€</td>
+					<td>{{ livre.editeur }}</td>
+					<td>{{ livre.dateEdition|date('d-m-Y') }}</td>
+					<td>{{ livre.categorie.getLibelle() }}</td>
+					<td>
+						<a href="{{path('livres_show',{'id':livre.id})}}" class="btn btn-info btn-sm">
+							<i class="fas fa-eye"></i>
+							Voir détail...
+						</a>
+					</td>
+					<td>
+						<a href="{{path('livres_delete',{'id':livre.id})}}" class="btn btn-danger btn-sm" onclick="return confirm('Êtes-vous sûr de vouloir supprimer ce livre ?');">
+							<i class="fas fa-trash-alt"></i>
+							Supprimer
+						</a>
+					</td>
+					<td>
+						<a href="{{path('admin_livres_update',{'id':livre.id})}}" class="btn btn-dark btn-sm">
+							<i class="fas fa-edit"></i>
+							Éditer
+						</a>
+					</td>
+
+				</tr>
+			{% else %}
+				<tr>
+					<td colspan="7" class="text-center">Aucun livre trouvé.</td>
+				</tr>
+			{% endfor %}
+		</tbody>
+	</table>
+	{# display navigation #}
+	<div class="navigation">
+		{{ knp_pagination_render(livres) }}
+	</div>
+</div>
+{% endblock %}

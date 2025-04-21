@@ -3,6 +3,8 @@
 namespace App\Entity;
 
 use App\Repository\LivresRepository;
+use Doctrine\Common\Collections\ArrayCollection;
+use Doctrine\Common\Collections\Collection;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
 
@@ -15,10 +17,10 @@ class Livres
     private ?int $id = null;
 
     #[ORM\Column(length: 255)]
-    private ?string $Titre = null;
+    private ?string $titre = null;
 
     #[ORM\Column(length: 255)]
-    private ?string $Slag = null;
+    private ?string $slag = null;
 
     #[ORM\Column(type: Types::TEXT, nullable: true)]
     private ?string $resume = null;
@@ -38,6 +40,22 @@ class Livres
     #[ORM\Column]
     private ?float $prix = null;
 
+    #[ORM\ManyToOne(targetEntity: Categories::class, inversedBy: 'livres')]
+    private ?Categories $categorie = null;
+
+    /**
+     * @var Collection<int, self>
+     */
+    #[ORM\OneToMany(targetEntity: self::class, mappedBy: 'categorie')]
+    private Collection $livres;
+
+    public function __construct()
+    {
+        $this->livres = new ArrayCollection();
+    }
+
+
+
     public function getId(): ?int
     {
         return $this->id;
@@ -45,24 +63,24 @@ class Livres
 
     public function getTitre(): ?string
     {
-        return $this->Titre;
+        return $this->titre;
     }
 
     public function setTitre(string $Titre): static
     {
-        $this->Titre = $Titre;
+        $this->titre = $Titre;
 
         return $this;
     }
 
     public function getSlag(): ?string
     {
-        return $this->Slag;
+        return $this->slag;
     }
 
     public function setSlag(string $Slag): static
     {
-        $this->Slag = $Slag;
+        $this->slag = $Slag;
 
         return $this;
     }
@@ -135,6 +153,33 @@ class Livres
     public function setPrix(float $prix): static
     {
         $this->prix = $prix;
+
+        return $this;
+    }
+
+
+
+
+    /**
+     * Get the value of categorie
+     *
+     * @return ?Categories
+     */
+    public function getCategorie(): ?Categories
+    {
+        return $this->categorie;
+    }
+
+    /**
+     * Set the value of categorie
+     *
+     * @param ?Categories $categorie
+     *
+     * @return self
+     */
+    public function setCategorie(?Categories $categorie): self
+    {
+        $this->categorie = $categorie;
 
         return $this;
     }

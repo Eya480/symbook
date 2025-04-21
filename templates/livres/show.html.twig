@@ -1,0 +1,41 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}
+	{{ parent() }}
+	- Détails du Livre
+{% endblock %}
+
+{% block body %}
+	<div class="container mt-4">
+		<div class="card p-4 shadow-lg">
+			<div
+				class="row">
+				<div class="col-md-4 text-center">
+					<img src="{{livre.image}}" alt="Couverture de {{ livre.titre }}" class="img-fluid rounded shadow">
+				</div>
+
+				<div class="col-md-8">
+					<h2 class="text-primary">{{ livre.titre }} ({{ livre.prix }} DT)</h2>
+					<p>
+						<strong>Auteur :</strong>
+						{{ livre.editeur }}</p>
+
+					<p>
+						<strong>Résumé :</strong>
+						{{ livre.resume }}</p>
+                    <p>
+						<strong>ISBN :</strong>
+						{{ livre.isbn }}</p>
+					<p>
+						<strong>Date :</strong>
+						{{ livre.dateEdition|date('d/m/Y') }}</p>
+
+					<a href="{{ path('admin_livres') }}" class="btn btn-secondary">
+						<i class="fas fa-arrow-left"></i>
+						Retour à la liste
+					</a>
+				</div>
+			</div>
+		</div>
+	</div>
+{% endblock %}

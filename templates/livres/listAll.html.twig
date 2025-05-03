@@ -17,6 +17,7 @@
 				<th>Identifiant</th>
 				<th>Titre</th>
 				<th>Prix</th>
+				<th>Images</th>
 				<th>Editeur</th>
 				<th>Date Edition</th>
 				<th>Catégorie</th>
@@ -32,6 +33,10 @@
 					<td>{{ livre.titre }}</td>
 					<td>{{ livre.prix }}
 						€</td>
+						<td>{% if livre.image %}
+    <img src="{{ asset('uploads/images/' ~ livre.image) }}" alt="{{ livre.titre }}" width="200">
+{% endif %}</td>
+
 					<td>{{ livre.editeur }}</td>
 					<td>{{ livre.dateEdition|date('d-m-Y') }}</td>
 					<td>{{ livre.categorie.getLibelle() }}</td>

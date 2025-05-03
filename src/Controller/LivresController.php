@@ -5,13 +5,15 @@ namespace App\Controller;
 use App\Entity\Livres;
 use App\Form\LivresType;
 use App\Repository\LivresRepository;
-use DateTime;
 use Doctrine\ORM\EntityManagerInterface;
 use Knp\Component\Pager\PaginatorInterface;
-use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
+use Symfony\Component\String\Slugger\SluggerInterface;
+use Symfony\Component\Security\Http\Attribute\IsGranted;
+use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
+use Symfony\Component\HttpFoundation\File\Exception\FileException;
 
 final class LivresController extends AbstractController
 {
@@ -124,48 +126,63 @@ final class LivresController extends AbstractController
         ]);
     }
 
-    #[Route('/admin/livres/create', name: 'admin_livres_create')]
-    public function create(Request $req,EntityManagerInterface $em): Response
-    {
-        $l= new Livres($req);
 
-        //affichage du form
-        $form=$this->createForm(LivresType::class,$l);
-        //traitement
-        $form->handleRequest($req);//permet de lier de form a l'objet categorie
-        if($form->isSubmitted() && $form->isValid()){
-            $em->persist($l);
+    #[Route('/admin/livres/create', name: 'admin_livres_create')]
+    public function create(Request $req, EntityManagerInterface $em, SluggerInterface $slugger): Response
+    {
+        $livre = new Livres();
+        $form = $this->createForm(LivresType::class, $livre);
+        $form->handleRequest($req);
+
+        if ($form->isSubmitted() && $form->isValid()) {
+            $imageFile = $form->get('image')->getData();
+
+            if ($imageFile) {
+                $originalFilename = pathinfo($imageFile->getClientOriginalName(), PATHINFO_FILENAME);
+                $safeFilename = $slugger->slug($originalFilename);
+                $newFilename = $safeFilename . '-' . uniqid() . '.' . $imageFile->guessExtension();
+
+                try {
+                    $imageFile->move(
+                        $this->getParameter('uploads_directory'),
+                        $newFilename
+                    );
+                } catch (FileException $e) {
+                    throw new \Exception("Erreur lors de l'upload de l'image");
+                }
+
+                $livre->setImage($newFilename);
+            }
+
+            $em->persist($livre);
             $em->flush();
-            $this->addFlash('success','Le Livre a été ajoutée dans la base');
+            $this->addFlash('success', 'Le Livre a été ajouté');
             return $this->redirectToRoute('admin_livres');
         }
 
         return $this->render('livres/createLiv.html.twig', [
             'f' => $form,
         ]);
-        
     }
 
+
     #[Route('/admin/livres/update/{id}', name: 'admin_livres_update')]
-    public function update(Request $req,EntityManagerInterface $em,Livres $l): Response
+    public function update(Request $req, EntityManagerInterface $em, Livres $l): Response
     {
 
         //affichage du form
-        $form=$this->createForm(LivresType::class,$l);
+        $form = $this->createForm(LivresType::class, $l);
         //traitement
-        $form->handleRequest($req);//permet de lier de form a l'objet categorie
-        if($form->isSubmitted() && $form->isValid()){
+        $form->handleRequest($req); //permet de lier de form a l'objet categorie
+        if ($form->isSubmitted() && $form->isValid()) {
             $em->persist($l);
             $em->flush();
-            $this->addFlash('success','Le Livre a été modifiée dans la base');
+            $this->addFlash('success', 'Le Livre a été modifiée dans la base');
             return $this->redirectToRoute('admin_livres');
         }
 
         return $this->render('livres/modifierLiv.html.twig', [
             'f' => $form,
         ]);
-        
     }
-
-    
 }

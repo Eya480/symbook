@@ -3,11 +3,9 @@
 namespace App\Controller;
 
 use App\Entity\Utilisateur;
-use App\Security\EmailVerifier;
 use Symfony\Component\Mime\Email;
 use App\Form\RegistrationFormType;
 use Doctrine\ORM\EntityManagerInterface;
-use App\Repository\UtilisateurRepository;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\Mailer\MailerInterface;
 use Symfony\Component\HttpFoundation\Response;
@@ -47,8 +45,6 @@ final class RegistrationController extends AbstractController
             // Générer et envoyer le lien de vérification
             $this->sendVerificationEmail($user);
             $this->addFlash('success', 'Un email de vérification a été envoyé. Veuillez vérifier votre boîte mail.');
-
-            return $this->redirectToRoute('home');
         }
 
         return $this->render('registration/register.html.twig', [
@@ -114,6 +110,6 @@ final class RegistrationController extends AbstractController
 
         $this->addFlash('success', 'Votre adresse email a été vérifiée avec succès.');
 
-        return $this->redirectToRoute('home');
+        return $this->redirectToRoute('app_login');
     }
 }

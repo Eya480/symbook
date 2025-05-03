@@ -7,55 +7,57 @@
 			{% endblock %}
 		</title>
 
-
-		<link rel="stylesheet" href="{{ asset('css/bootstrap.css') }}">
+		<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+		<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 		<link
-		rel="stylesheet" href="{{ asset('css/style-prefix.css') }}">
+		rel="stylesheet" href="{{ asset('css/bootstrap.css') }}">
+
 
 		<!-- Google Fonts -->
-		{% block stylesheets %}{% endblock %}
+		{% block stylesheets %}<link rel="stylesheet" href="{{ asset('css/main.css') }}">
+		{% endblock %}
 
 	</head>
 	<body>
+		{% block nav %}
+			<nav class="navbar navbar-expand-lg bg-primary" data-bs-theme="dark">
+				<div class="container-fluid">
+					<a class="navbar-brand" href="{{ path('home') }}">Symbook</a>
+					<button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarColor02" aria-controls="navbarColor02" aria-expanded="false" aria-label="Toggle navigation">
+						<span class="navbar-toggler-icon"></span>
+					</button>
 
-		<nav class="navbar navbar-expand-lg bg-primary" data-bs-theme="dark">
-			<div class="container-fluid">
-				<a class="navbar-brand" href="#">Symbook</a>
-				<button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarColor02" aria-controls="navbarColor02" aria-expanded="false" aria-label="Toggle navigation">
-					<span class="navbar-toggler-icon"></span>
-				</button>
-
-				<div class="collapse navbar-collapse" id="navbarColor02">
-					<ul class="navbar-nav me-auto">
-						<li class="nav-item">
-							<a class="nav-link" href="{{ path('admin_livres') }}">
-								<i class="fas fa-home"></i>
-								Accueil
-							</a>
-						</li>
-						<li class="nav-item">
-							<a class="nav-link" href="{{ path('admin_livres') }}">
-								<i class="fas fa-book-open"></i>
-								Nos Livres
-							</a>
-						</li>
-						<li class="nav-item">
-							<a class="nav-link" href="{{ path('admin_categories') }}">
-								<i class="fas fa-list"></i>
-								Nos Catégories
-							</a>
-						</li>
-						<li class="nav-item">
-							<a class="nav-link" href="#">
-								<i class="fas fa-envelope"></i>
-								Contactez-Nous
-							</a>
-						</li>
-					</ul>
+					<div class="collapse navbar-collapse" id="navbarColor02">
+						<ul class="navbar-nav me-auto">
+							<li class="nav-item">
+								<a class="nav-link" href="{{ path('home') }}">
+									<i class="fas fa-home"></i>
+									Accueil
+								</a>
+							</li>
+							<li class="nav-item">
+								<a class="nav-link" href="{{ path('home_livres') }}">
+									<i class="fas fa-book-open"></i>
+									Nos Livres
+								</a>
+							</li>
+							<li class="nav-item">
+								<a class="nav-link" href="{{ path('admin_categories') }}">
+									<i class="fas fa-list"></i>
+									Nos Catégories
+								</a>
+							</li>
+							<li class="nav-item">
+								<a class="nav-link" href="#">
+									<i class="fas fa-envelope"></i>
+									Contactez-Nous
+								</a>
+							</li>
+						</ul>
+					</div>
 				</div>
-			</div>
-		</nav>
-
+			</nav>
+		{% endblock %}
 		<div class="container mt-3">
 			{% for type, messages in app.flashes %}
 				{% for message in messages %}
@@ -67,9 +69,203 @@
 		</div>
 		{% block javascripts %}
 
-			<script src="{{ asset("assets/js/jquery-3.2.1.min.js") }}"></script>
-			<script src="{{ asset("assets/js/plugins.js") }}"></script>
-			<script src="{{ asset("assets/js/main.js") }}"></script>
+			{% block footer %}
+				<!-- Footer -->
+				<footer>
+					<div class="footer-bg"></div>
+
+					<div class="footer-grid">
+						<div class="footer-col">
+							<h3>Symbook</h3>
+							<p>Redéfinir l'expérience de lecture depuis 2025. Combinaison unique de technologie et de littérature.</p>
+							<div class="social-links">
+								<a href="#">
+									<i class="fab fa-instagram"></i>
+								</a>
+								<a href="#">
+									<i class="fab fa-tiktok"></i>
+								</a>
+								<a href="#">
+									<i class="fab fa-discord"></i>
+								</a>
+								<a href="#">
+									<i class="fab fa-twitter"></i>
+								</a>
+							</div>
+						</div>
+
+						<div class="footer-col">
+							<h3>Navigation</h3>
+							<ul class="footer-links">
+								<li>
+									<a href="#">Nouveautés</a>
+								</li>
+								<li>
+									<a href="#">Livres</a>
+								</li>
+								<li>
+									<a href="#">Éditions limitées</a>
+								</li>
+								<li>
+									<a href="#">Catégories</a>
+								</li>
+								<li>
+									<a href="#">Blog</a>
+								</li>
+							</ul>
+						</div>
+
+
+						<div class="footer-col">
+							<h3>Newsletter</h3>
+							<p>Abonnez-vous pour des contenus exclusifs et 10% de réduction.</p>
+							<div class="newsletter">
+								<input type="email" placeholder="Votre email">
+								<button class="btn btn-primary">S'abonner</button>
+							</div>
+						</div>
+					</div>
+
+					<div class="footer-bottom">
+						<span class="copyright">© 2025 Symbook Books. Tous droits réservés.</span>
+						<div class="footer-links">
+							<a href="#">Confidentialité</a>
+							<a href="#">Conditions</a>
+							<a href="#">Cookies</a>
+						</div>
+					</div>
+				</footer>
+				<style>
+					{
+						--primary: #5E2BFF; /* Violet néon */
+						--secondary: #00F0FF; /* Cyan */
+						--accent: #FF2BD7; /* Rose fluo */
+						--dark: #0A0A1A; /* Noir profond */
+						--light: #F0F4FF; /* Bleu clair cosmique */
+						--font-main: 'Inter', -apple-system, sans-serif;
+						--font-title: 'Clash Display', sans-serif;
+						--glass: rgba(255, 255, 255, 0.08);
+						--glass-border: rgba(255, 255, 255, 0.2);
+					}
+
+					/* ===== Footer Holographique ===== */
+					footer {
+						padding: 6rem 5% 3rem;
+						background: linear-gradient(to top, rgba(10, 10, 26, 1), rgba(20, 20, 40, 1));
+						position: relative;
+						overflow: hidden;
+					}
+
+					.footer-grid {
+						display: grid;
+						grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+						gap: 3rem;
+						margin-bottom: 3rem;
+						position: relative;
+						z-index: 2;
+					}
+
+					.footer-col h3 {
+						font-size: 1.3rem;
+						margin-bottom: 1.5rem;
+						position: relative;
+						display: inline-block;
+					}
+
+					.footer-col h3::after {
+						content: '';
+						position: absolute;
+						bottom: -8px;
+						left: 0;
+						width: 40%;
+						height: 2px;
+						background: var(--accent);
+					}
+
+					.footer-links {
+						list-style: none;
+					}
+
+					.footer-links li {
+						margin-bottom: 1rem;
+					}
+
+					.footer-links a {
+						color: rgba(255, 255, 255, 0.7);
+						text-decoration: none;
+						transition: all 0.3s ease;
+						display: inline-block;
+					}
+
+					.footer-links a:hover {
+						color: var(--secondary);
+						transform: translateX(5px);
+					}
+
+					.newsletter input {
+						width: 100%;
+						padding: 1rem;
+						margin-bottom: 1rem;
+						background: rgba(255, 255, 255, 0.1);
+						border: 1px solid var(--glass-border);
+						border-radius: 8px;
+						color: white;
+					}
+
+					.newsletter input::placeholder {
+						color: rgba(255, 255, 255, 0.5);
+					}
+
+					.social-links {
+						display: flex;
+						gap: 1rem;
+						margin-top: 1.5rem;
+					}
+
+					.social-links a {
+						display: flex;
+						align-items: center;
+						justify-content: center;
+						width: 40px;
+						height: 40px;
+						background: rgba(255, 255, 255, 0.1);
+						border-radius: 50%;
+						transition: all 0.3s ease;
+					}
+
+					.social-links a:hover {
+						background: var(--primary);
+						transform: translateY(-3px);
+					}
+
+					.footer-bottom {
+						display: flex;
+						justify-content: space-between;
+						align-items: center;
+						padding-top: 3rem;
+						border-top: 1px solid rgba(255, 255, 255, 0.1);
+						position: relative;
+						z-index: 2;
+					}
+
+					.copyright {
+						color: rgba(255, 255, 255, 0.5);
+						font-size: 0.9rem;
+					}
+
+					.footer-bg {
+						position: absolute;
+						top: 0;
+						left: 0;
+						width: 100%;
+						height: 100%;
+						opacity: 0.05;
+						z-index: 1;
+						background: radial-gradient(circle at 70% 30%, var(--primary), transparent 50%), radial-gradient(circle at 30% 70%, var(--accent), transparent 50%);
+					}
+				</style>
+
+			{% endblock %}
 		{% endblock %}
 	</body>
 </html>

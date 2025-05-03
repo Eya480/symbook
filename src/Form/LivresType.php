@@ -38,7 +38,6 @@ class LivresType extends AbstractType
             )
             ->add('resume', null, [
                 'constraints' => [
-                    new NotBlank(),
                     new Length(['min' => 10, 'minMessage' => 'Le résumé doit faire au moins {{ limit }} caractères'])
                 ]
             ])

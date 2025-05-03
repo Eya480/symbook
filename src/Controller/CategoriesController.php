@@ -11,56 +11,76 @@ use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
 
-final class CategoriesController extends AbstractController{
+final class CategoriesController extends AbstractController
+{
+
     #[Route('/admin/categories', name: 'admin_categories')]
-    public function index(CategoriesRepository $catRep): Response
+    public function index(CategoriesRepository $catRep, Request $req): Response
     {
-        $cat= $catRep->findAll();
+        $searchTerm = $req->query->get('q');
+
+        $categories = $searchTerm
+            ? $catRep->findBySearchTerm($searchTerm)
+            : $catRep->findAll();
+
         return $this->render('categories/index.html.twig', [
-            'cat' => $cat,
+            'cat' => $categories,
         ]);
     }
 
+
+
     #[Route('/admin/categories/create', name: 'admin_categories_create')]
-    public function create(Request $req,EntityManagerInterface $em): Response
+    public function create(Request $req, EntityManagerInterface $em): Response
     {
-        $cat= new Categories($req);
+        $cat = new Categories($req);
 
         //affichage du form
-        $form=$this->createForm(CategoriesType::class,$cat);
+        $form = $this->createForm(CategoriesType::class, $cat);
         //traitement
-        $form->handleRequest($req);//permet de lier de form a l'objet categorie
-        if($form->isSubmitted() && $form->isValid()){
+        $form->handleRequest($req); //permet de lier de form a l'objet categorie
+        if ($form->isSubmitted() && $form->isValid()) {
             $em->persist($cat);
             $em->flush();
-            $this->addFlash('success','La categorie a été ajoutée dans la base');
+            $this->addFlash('success', 'La categorie a été ajoutée dans la base');
             return $this->redirectToRoute('admin_categories');
         }
 
         return $this->render('categories/createCat.html.twig', [
             'f' => $form,
         ]);
-        
     }
 
     #[Route('/admin/categories/update', name: 'admin_categories_update')]
-    public function update(Request $req,EntityManagerInterface $em,Categories $c): Response
+    public function update(Request $req, EntityManagerInterface $em, Categories $c): Response
     {
 
         //affichage du form
-        $form=$this->createForm(CategoriesType::class,$c);
+        $form = $this->createForm(CategoriesType::class, $c);
         //traitement
-        $form->handleRequest($req);//permet de lier de form a l'objet categorie
-        if($form->isSubmitted() && $form->isValid()){
+        $form->handleRequest($req); //permet de lier de form a l'objet categorie
+        if ($form->isSubmitted() && $form->isValid()) {
             $em->persist($c);
             $em->flush();
-            $this->addFlash('success','La categorie a été modifiée dans la base');
+            $this->addFlash('success', 'La categorie a été modifiée dans la base');
             return $this->redirectToRoute('admin_categories');
         }
 
         return $this->render('categories/modifierCat.html.twig', [
             'f' => $form,
         ]);
-        
+    }
+
+    #[Route('admin/categories/delete/{id}', name: 'categorie_delete')]
+    public function delete(CategoriesRepository $rep, $id, EntityManagerInterface $em): Response
+    {
+
+        $cat = $rep->find($id);
+        if (!$cat) {
+            throw $this->createNotFoundException("La categorie n'existe pas.");
+        }
+        $em->remove($cat);
+        $em->flush();
+        return new Response('cat a été supprimée avec succés');
     }
 }

@@ -4,6 +4,8 @@ namespace App\Form;
 
 use App\Entity\Livres;
 use App\Entity\Categories;
+use Symfony\Component\Form\FormEvent;
+use Symfony\Component\Form\FormEvents;
 use Symfony\Component\Form\AbstractType;
 use Symfony\Component\Form\FormBuilderInterface;
 use Symfony\Bridge\Doctrine\Form\Type\EntityType;
@@ -11,6 +13,7 @@ use Symfony\Component\Validator\Constraints\File;
 use Symfony\Component\Validator\Constraints\Length;
 use Symfony\Component\Validator\Constraints\NotBlank;
 use Symfony\Component\OptionsResolver\OptionsResolver;
+use Symfony\Component\String\Slugger\SluggerInterface;
 use Symfony\Component\Form\Extension\Core\Type\FileType;
 use Symfony\Component\Form\Extension\Core\Type\SubmitType;
 use Symfony\Component\Validator\Constraints\PositiveOrZero;
@@ -18,6 +21,13 @@ use Symfony\Component\Validator\Constraints\Isbn as IsbnConstraint; // Notez l'a
 
 class LivresType extends AbstractType
 {
+    private $slugger;
+
+    public function __construct(SluggerInterface $slugger)
+    {
+        $this->slugger = $slugger;
+    }
+
     public function buildForm(FormBuilderInterface $builder, array $options): void
     {
         $builder
@@ -32,10 +42,12 @@ class LivresType extends AbstractType
                     ])
                 ]
             ])
-            ->add('slag')
-            ->add(
-                'isbn'
-            )
+            ->add('isbn', null, [
+                'constraints' => [
+                    new NotBlank(['message' => 'L\'ISBN est obligatoire']),
+                    new IsbnConstraint(['message' => 'Veuillez entrer un ISBN valide'])
+                ]
+            ])
             ->add('resume', null, [
                 'constraints' => [
                     new Length(['min' => 10, 'minMessage' => 'Le résumé doit faire au moins {{ limit }} caractères'])
@@ -52,7 +64,7 @@ class LivresType extends AbstractType
                             'image/jpeg',
                             'image/png',
                             'image/jpg',
-                            'image/webp'
+                            'image/webp',
                         ],
                         'mimeTypesMessage' => 'Veuillez uploader une image valide (JPG/PNG)',
                     ])
@@ -71,6 +83,12 @@ class LivresType extends AbstractType
                     new PositiveOrZero(['message' => 'Le prix doit être positif'])
                 ]
             ])
+            ->add('stock', null, [
+                'constraints' => [
+                    new NotBlank(),
+                    new PositiveOrZero(['message' => 'Le nombres en stock doit être positif'])
+                ]
+            ])
             ->add('categorie', EntityType::class, [
                 'class' => Categories::class,
                 'choice_label' => 'libelle',
@@ -80,6 +98,17 @@ class LivresType extends AbstractType
             ])
             ->add('Sauvgarder', SubmitType::class)
         ;
+
+        $builder->addEventListener(FormEvents::PRE_SUBMIT, function (FormEvent $event) {
+            $data = $event->getData();
+            $livre = $event->getForm()->getData();
+
+            // Générer le slug à partir du titre
+            if (isset($data['titre'])) {
+                $slug = $this->slugger->slug($data['titre'])->lower();
+                $livre->setSlug($slug);
+            }
+        });
     }
 
     public function configureOptions(OptionsResolver $resolver): void

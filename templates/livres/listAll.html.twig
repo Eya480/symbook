@@ -26,6 +26,7 @@
 					<th>Image</th>
 					<th>Editeur</th>
 					<th>Date Edition</th>
+					<th>Stock</th>
 					<th>Catégorie</th>
 					<th class="text-center">Actions</th>
 				</tr>
@@ -36,7 +37,7 @@
 						<td>{{ livre.id }}</td>
 						<td>{{ livre.titre }}</td>
 						<td>{{ livre.prix }}
-							€</td>
+							DT</td>
 						<td>
 							{% if livre.image %}
 								<img src="{{ asset('uploads/images/' ~ livre.image) }}" alt="{{ livre.titre }}" class="img-thumbnail" style="max-width: 100px;">
@@ -44,6 +45,7 @@
 						</td>
 						<td>{{ livre.editeur }}</td>
 						<td>{{ livre.dateEdition|date('d/m/Y') }}</td>
+						<td>{{ livre.stock }}</td>
 						<td>{{ livre.categorie.getLibelle() }}</td>
 						<td class="text-nowrap text-center">
 							<a href="{{ path('livres_show', {'id': livre.id}) }}" class="btn btn-sm btn-info" title="Voir détails">

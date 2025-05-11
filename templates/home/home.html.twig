@@ -9,30 +9,40 @@
 	<div class="particles" id="particles"></div>
 
 	<!-- Header -->
-	<header class="glass-card">
-		<nav class="navbar">
-			<a href="#" class="logo">Symbook</a>
+	<!-- Effets de particules -->
+    <div class="particles" id="particles"></div>
 
-			<div class="nav-links">
-				<a href="{{ path('home') }}">Accueil</a>
-				<a href="{{ path('home_livre') }}">Livres</a>
-				<a href="#">Événements</a>
-				<a href="#">Contact</a>
-			</div>
+    <!-- Header -->
+    <header class="glass-card">
+        <nav class="navbar">
+            <a href="#" class="logo">Symbook</a>
 
-			<div class="nav-actions">
-				<div class="search-icon">
-					<i class="fas fa-search"></i>
-				</div>
-				<div class="cart-icon">
-					<i class="fas fa-shopping-bag"></i>
-				</div>
-				<div class="hamburger">
-					<i class="fas fa-bars"></i>
-				</div>
-			</div>
-		</nav>
-	</header>
+            <div class="nav-links">
+                <a href="{{ path('home') }}"><i class="fas fa-home me-1"></i>Accueil</a>
+                <a href="{{ path('home_livre') }}"><i class="fas fa-book me-1"></i>Livres</a>
+                <a href="#"><i class="fas fa-envelope me-1"></i>Contact</a>
+            </div>
+
+            <div class="nav-actions">
+                <div class="nav-links search-icon">
+                    <a href="{{ path('app_register') }}"><i class="fas fa-user-plus me-1"></i>Inscription</a>
+                </div>
+                <div class="search-icon">
+                    <i class="fas fa-search"></i>
+                </div>
+                <a href="{{ path('app_panier') }}" class="position-relative text-decoration-none">
+                    <i class="fas fa-shopping-bag fs-4 text-dark"></i>
+                    {% set panier = app.session.get('panier')|default([]) %}
+                    <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger" id="cart-counter" style="display: {{ panier|length > 0 ? 'flex' : 'none' }}">
+                        {{ panier|reduce((total, qty) => total + qty, 0) }}
+                    </span>
+                </a>
+            </div>
+            <div class="hamburger">
+                <i class="fas fa-bars"></i>
+            </div>
+        </nav>
+    </header>
 {% endblock %}
 {% block body %}
 
@@ -42,7 +52,7 @@
 			<h1>L'avenir de la
 				<span class="gradient-text">lecture</span>
 				est ici</h1>
-			<p>Découvrez notre collection de livres en édition limitée avec réalité augmentée, recommandations IA et expériences de lecture immersives.</p>
+			<p>Découvrez notre collection de livres en édition limitée avec réalité augmentée et expériences de lecture immersives.</p>
 			<div class="btn-group">
 				<a href="{{ path('home_livre') }}" class="btn btn-primary">
 					Explorer maintenant
@@ -69,7 +79,7 @@
 		</div>
 
 		<div class="book-grid">
-			{% for livre in livres|slice(0, 6) %}
+			{% for livre in livres|slice(0, 3) %}
 				<div class="book-card">
 					<div class="book-inner">
 						<div class="book-cover">
@@ -77,7 +87,7 @@
 							<h3 class="book-title">{{ livre.titre }}</h3>
 							<p class="book-author">{{ livre.editeur }}</p>
 							<div class="book-price">
-								<span class="price">{{ livre.prix }}€</span>
+								<span class="price">{{ livre.prix }}DT</span>
 								<button class="add-to-cart" data-id="{{ livre.id }}">Ajouter</button>
 							</div>
 						</div>
@@ -141,8 +151,8 @@ const bookCards = document.querySelectorAll('.book-card');
 
 bookCards.forEach(card => {
 card.addEventListener('mousemove', (e) => {
-const xAxis = (window.innerWidth / 2 - e.pageX) / 20;
-const yAxis = (window.innerHeight / 2 - e.pageY) / 20;
+const xAxis = (window.innerWidth / 2 - e.pageX) / 60;
+const yAxis = (window.innerHeight / 2 - e.pageY) / 60;
 card.style.transform = `rotateY(${xAxis}deg) rotateX(${yAxis}deg)`;
 });
 
@@ -153,6 +163,50 @@ card.style.transition = 'none';
 card.addEventListener('mouseleave', () => {
 card.style.transition = 'transform 0.5s ease';
 card.style.transform = 'rotateY(0deg) rotateX(0deg)';
+});
+});
+
+
+document.querySelectorAll('.add-to-cart').forEach(btn => {
+btn.addEventListener('click', async function (e) {
+e.preventDefault();
+const livreId = this.dataset.id;
+
+try {
+const response = await fetch (`/panier/ajouter/${livreId}`, {
+method: 'POST',
+headers: {
+'X-Requested-With': 'XMLHttpRequest',
+'Content-Type': 'application/json'
+},
+credentials: 'same-origin'
+});
+
+if (response.ok) {
+const data = await response.json();
+const counter = document.getElementById('cart-counter');
+
+// Mise à jour du compteur
+if (counter) {
+counter.textContent = data.totalItems;
+counter.style.display = 'flex';
+
+// Animation
+counter.classList.add('pulse');
+setTimeout(() => {
+counter.classList.remove('pulse');
+}, 500);
+}
+
+// Feedback visuel sur le bouton
+this.innerHTML = '<i class="fas fa-check"></i> Ajouté';
+setTimeout(() => {
+this.innerHTML = 'Ajouter';
+}, 2000);
+}
+} catch (error) {
+console.error('Erreur:', error);
+}
 });
 });
 	</script>

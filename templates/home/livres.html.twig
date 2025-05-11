@@ -5,94 +5,205 @@
 
 {% block stylesheets %}
 	<link rel="stylesheet" href="{{ asset('css/livres.css') }}">
+{% endblock %}
 
-</style>{% endblock %}{% block nav %}
-<header class="glass-card">
-	<nav class="navbar">
-		<a href="{{ path('home') }}" class="logo">Symbook</a>
-		<div class="nav-links">
-			<a href="{{ path('home') }}">Accueil</a>
-			<a href="{{ path('home_livre') }}">Livres</a>
-			<a href="#">Contact</a>
-		</div>
-		<div class="nav-actions">
-			<div class="search-icon">
-				<i class="fas fa-search"></i>
+{% block nav %}
+	<!-- Effets de particules -->
+	<div class="particles" id="particles"></div>
+
+	<!-- Header -->
+	<header class="glass-card">
+		<nav class="navbar">
+			<a href="#" class="logo">Symbook</a>
+
+			<div class="nav-links">
+				<a href="{{ path('home') }}">
+					<i class="fas fa-home me-1"></i>Accueil</a>
+				<a href="{{ path('home_livre') }}">
+					<i class="fas fa-book me-1"></i>Livres</a>
+				<a href="#">
+					<i class="fas fa-envelope me-1"></i>Contact</a>
 			</div>
-			<div class="cart-icon">
-				<i class="fas fa-shopping-bag"></i>
+
+			<div class="nav-actions">
+				<div class="nav-links search-icon">
+					<a href="{{ path('app_register') }}">
+						<i class="fas fa-user-plus me-1"></i>Inscription</a>
+				</div>
+				<div class="search-icon">
+					<i class="fas fa-search"></i>
+				</div>
+				<a href="{{ path('app_panier') }}" class="position-relative text-decoration-none">
+                    <i class="fas fa-shopping-bag fs-4 text-dark"></i>
+                    {% set panier = app.session.get('panier')|default([]) %}
+                    <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger" id="cart-counter" style="display: {{ panier|length > 0 ? 'flex' : 'none' }}">
+                        {{ panier|reduce((total, qty) => total + qty, 0) }}
+                    </span>
+                </a>
 			</div>
 			<div class="hamburger">
 				<i class="fas fa-bars"></i>
 			</div>
-		</div>
-	</nav>
-</header>{% endblock %}{% block body %}
-<div class="main-container">
-	<div class="page-header">
-		<h1 class="page-title">Tous Nos Livres</h1>
-		<p class="page-subtitle">Découvrez notre collection complète</p>
-	</div>
+		</nav>
+	</header>
+{% endblock %}
+{% block body %}
+	<div class="main-container">
+		<div class="page-header">
+			<h3 class="page-title">Tous Nos Livres</h3>
+			<p class="page-subtitle">Découvrez notre collection complète</p>
 
-	<div class="all-books-grid">
-		{% for livre in livres %}
-			<div class="book-card">
-				<div class="book-inner">
-					<div class="book-cover">
-						<div class="book-cover-img-container">
-							<img src="{{ asset('uploads/images/' ~ livre.image) }}" alt="{{ livre.titre }}" loading="lazy">
-						</div>
-						<div class="book-info">
-							<h3 class="book-title">{{ livre.titre|slice(0, 20) }}
-								{% if livre.titre|length > 20 %}...
-								{% endif %}
-							</h3>
-							<p class="book-author">{{ livre.editeur|slice(0, 20) }}</p>
-							<div class="book-price">
-								<span class="price">{{ livre.prix }}€</span>
-								<button class="add-to-cart" data-id="{{ livre.id }}">+</button>
+			{# Barre de recherche et filtres #}
+			<form method="get" action="{{ path('home_livre') }}" class="row g-3 align-items-center" style="margin-bottom:15px">
+				<div class="col-md-6">
+					<div class="input-group">
+						<input type="text" name="q" placeholder="Rechercher un livre..." value="{{ app.request.query.get('q') }}" class="form-control rounded-pill">
+						<button type="submit" class="btn btn-outline-primary rounded-pill" style="margin-left:7px;">
+							<i class="fas fa-search"></i>
+						</button>
+					</div>
+				</div>
+				<div class="col-md-6">
+					<div class="d-flex gap-2">
+						<select name="categorie" class="form-select rounded-pill">
+							<option value="">Toutes les catégories</option>
+							{% for categorie in categories %}
+								<option value="{{ categorie.id }}" {% if app.request.query.get('categorie') == categorie.id %} selected {% endif %}>
+									{{ categorie.libelle }}
+								</option>
+							{% endfor %}
+						</select>
+						<select name="prix" class="form-select rounded-pill">
+							<option value="">Tous les prix</option>
+							{% for prix in lesPrix %}
+								<option value="{{ prix }}" {% if app.request.query.get('prix') == prix %} selected {% endif %}>
+									{% if prix == '10-50' %}10 - 50 DT
+										{% elseif prix == '50-100' %}50 - 100 DT
+										{% elseif prix == '100-500' %}100 - 500 DT
+										{% elseif prix == '500+' %}500 DT et plus
+									{% endif %}
+								</option>
+							{% endfor %}
+						</select>
+						<button type="submit" class="btn btn-primary rounded-pill">
+							<i class="fas fa-filter"></i>
+						</button>
+						{% if app.request.query.get('q') or app.request.query.get('categorie') %}
+							<a href="{{ path('home_livre') }}" class="btn btn-outline-secondary rounded-pill">
+								<i class="fas fa-undo"></i>
+							</a>
+						{% endif %}
+					</div>
+				</div>
+			</form>
+			{# Catégories disponibles #}
+			<section class="mb-5">
+				<div class="d-flex flex-wrap gap-3">
+					{% for categorie in categories|slice(0, 5) %}
+						<a href="{{ path('home_livre', {'categorie': categorie.id}) }}" class="btn btn-outline-primary d-flex align-items-center gap-2">
+							<i class="fas fa-book-open"></i>
+							{{ categorie.libelle }}
+						</a>
+					{% endfor %}
+				</div>
+			</section>
+		</div>
+
+		{# Affichage des résultats #}
+		{% if livres|length > 0 %}
+			<div class="all-books-grid">
+				{% for livre in livres %}
+					<div class="book-card">
+						<div class="book-inner">
+							<div class="book-cover">
+								<div class="book-cover-img-container">
+									<img src="{{ asset('uploads/images/' ~ livre.image) }}" alt="{{ livre.titre }}" loading="lazy">
+								</div>
+								<div class="book-info">
+									<h3 class="book-title">{{ livre.titre|slice(0, 20) }}
+										{% if livre.titre|length > 20 %}...
+										{% endif %}
+									</h3>
+									<p class="book-author">{{ livre.editeur|slice(0, 20) }}</p>
+									<div class="book-price">
+										<span class="price">{{ livre.prix }}DT</span>
+										<button class="add-to-cart" data-id="{{ livre.id }}">
+											<i class="fas fa-cart-plus"></i>
+											Ajouter
+										</button>
+									</div>
+								</div>
+							</div>
+							<div class="book-back">
+								<p class="book-description">{{ livre.resume|slice(0, 120) }}...</p>
+								<div class="book-details">
+									<span class="detail-item">
+										<i class="fas fa-tag"></i>
+										{{ livre.categorie.libelle }}</span>
+									<span class="detail-item">
+										<i class="far fa-calendar"></i>
+										{{ livre.dateEdition|date('Y') }}</span>
+								</div>
 							</div>
 						</div>
 					</div>
-					<div class="book-back">
-						<p class="book-description">{{ livre.resume|slice(0, 120) }}...</p>
-						<div class="book-details">
-							<span class="detail-item">
-								<i class="fas fa-tag"></i>
-								{{ livre.categorie.libelle }}</span>
-							<span class="detail-item">
-								<i class="far fa-calendar"></i>
-								{{ livre.dateEdition|date('Y') }}</span>
-						</div>
-					</div>
-				</div>
+				{% endfor %}
 			</div>
-		{% endfor %}
+
+			{# Pagination #}
+			<div class="d-flex justify-content-center mt-4">
+				{{ knp_pagination_render(livres) }}
+			</div>
+		{% else %}
+			<div class="no-results glass-card p-4 text-center rounded-3">
+				<p class="lead">Aucun livre ne correspond à votre recherche.</p>
+				<a href="{{ path('home_livre') }}" class="btn btn-primary btn-sm rounded-pill">
+					<i class="fas fa-undo"></i>
+				</a>
+			</div>
+		{% endif %}
 	</div>
 
-
 	<script>
-		// Animation simplifiée
-document.querySelectorAll('.book-card').forEach((card, i) => {
-card.style.animationDelay = `${
-i * 0.1
-}s`;
-card.style.opacity = 0;
-setTimeout(() => card.style.opacity = 1, i * 100);
+		document.querySelectorAll('.add-to-cart').forEach(btn => {
+btn.addEventListener('click', async function (e) {
+e.preventDefault();
+const livreId = this.dataset.id;
+
+try {
+const response = await fetch (`/panier/ajouter/${livreId}`, {
+method: 'POST',
+headers: {
+'X-Requested-With': 'XMLHttpRequest',
+'Content-Type': 'application/json'
+},
+credentials: 'same-origin'
 });
 
-// Ajout au panier optimisé
-document.querySelectorAll('.add-to-cart').forEach(btn => {
-btn.addEventListener('click', async function () {
-const bookId = this.dataset.id;
-try {
-const response = await fetch (`/cart/add/${bookId}`);
 if (response.ok) {
-this.innerHTML = '<i class="fas fa-check"></i>';
-setTimeout(() => this.textContent = '+', 1500);
+const data = await response.json();
+const counter = document.getElementById('cart-counter');
+
+// Mise à jour du compteur
+if (counter) {
+counter.textContent = data.totalItems;
+counter.style.display = 'flex';
+
+// Animation
+counter.classList.add('pulse');
+setTimeout(() => {
+counter.classList.remove('pulse');
+}, 500);
 }
-} catch (e) {
-console.error(e);
+
+// Feedback visuel sur le bouton
+this.innerHTML = '<i class="fas fa-check"></i> Ajouté';
+setTimeout(() => {
+this.innerHTML = 'Ajouter';
+}, 2000);
+}
+} catch (error) {
+console.error('Erreur:', error);
 }
 });
 });

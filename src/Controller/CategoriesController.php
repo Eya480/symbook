@@ -6,16 +6,17 @@ use App\Entity\Categories;
 use App\Form\CategoriesType;
 use App\Repository\CategoriesRepository;
 use Doctrine\ORM\EntityManagerInterface;
+use Knp\Component\Pager\PaginatorInterface;
+use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
-use Symfony\Component\HttpFoundation\Request;
 
 final class CategoriesController extends AbstractController
 {
 
     #[Route('/admin/categories', name: 'admin_categories')]
-    public function index(CategoriesRepository $catRep, Request $req): Response
+    public function index(CategoriesRepository $catRep, Request $req, PaginatorInterface $paginator): Response
     {
         $searchTerm = $req->query->get('q');
 
@@ -23,6 +24,11 @@ final class CategoriesController extends AbstractController
             ? $catRep->findBySearchTerm($searchTerm)
             : $catRep->findAll();
 
+        $categories = $paginator->paginate(
+            $categories, /* query NOT result */
+            $req->query->getInt('page', 1), /* page number */
+            10 /* limit per page */
+        );
         return $this->render('categories/index.html.twig', [
             'cat' => $categories,
         ]);
@@ -81,6 +87,7 @@ final class CategoriesController extends AbstractController
         }
         $em->remove($cat);
         $em->flush();
-        return new Response('cat a été supprimée avec succés');
+        $this->addFlash('success', 'La categorie a été supprimé avec succés');
+        return $this->redirectToRoute('admin_categories');
     }
 }

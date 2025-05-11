@@ -258,7 +258,7 @@ header {
 /* ===== Main Content ===== */
 .main-container {
   max-width: 1400px;
-  margin: 100px auto 0;
+  margin: 56px auto 0;
   padding: 2rem 5%;
 }
 
@@ -270,7 +270,7 @@ header {
 .page-title {
   font-family: var(--font-title);
   font-size: 3rem;
-  background: linear-gradient(90deg, var(--primary), var(--accent));
+  background: white;
   -webkit-background-clip: text;
   background-clip: text;
   color: transparent;
@@ -280,7 +280,7 @@ header {
 /* ===== Book Grid ===== */
 .all-books-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  grid-template-columns: repeat(auto-fill, minmax(250px, 2fr));
   gap: 2.5rem;
   margin-top: 3rem;
 }
@@ -475,4 +475,26 @@ header {
   .book-cover img {
     max-height: 220px;
   }
+}
+.form-select.rounded-pill {
+  padding: 0.5rem 1rem;
+  background: rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  color: white;
+  transition: all 0.3s ease;
+}
+
+.form-select.rounded-pill:focus {
+  background: rgba(255, 255, 255, 0.2);
+  border-color: #007bff;
+  box-shadow: 0 0 5px rgba(0, 123, 255, 0.5);
+}
+
+.form-select.rounded-pill option {
+  background: #333;
+  color: white;
+}
+
+.d-flex.gap-2 {
+  gap: 1rem;
 }

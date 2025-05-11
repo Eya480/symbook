@@ -2,11 +2,12 @@
 
 namespace App\Entity;
 
-use App\Repository\LivresRepository;
-use Doctrine\Common\Collections\ArrayCollection;
-use Doctrine\Common\Collections\Collection;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
+use App\Repository\LivresRepository;
+use Doctrine\Common\Collections\Collection;
+use Doctrine\Common\Collections\ArrayCollection;
+use Symfony\Component\String\Slugger\SluggerInterface;
 
 #[ORM\Entity(repositoryClass: LivresRepository::class)]
 class Livres
@@ -20,7 +21,7 @@ class Livres
     private ?string $titre = null;
 
     #[ORM\Column(length: 255)]
-    private ?string $slag = null;
+    private ?string $slug = null;
 
     #[ORM\Column(type: Types::TEXT, nullable: true)]
     private ?string $resume = null;
@@ -49,9 +50,19 @@ class Livres
     #[ORM\OneToMany(targetEntity: self::class, mappedBy: 'categorie')]
     private Collection $livres;
 
+    /**
+     * @var Collection<int, LigneCommande>
+     */
+    #[ORM\OneToMany(targetEntity: LigneCommande::class, mappedBy: 'Livre')]
+    private Collection $commande;
+
+    #[ORM\Column(nullable: true)]
+    private ?int $stock = null;
+
     public function __construct()
     {
         $this->livres = new ArrayCollection();
+        $this->commande = new ArrayCollection();
     }
 
 
@@ -73,15 +84,23 @@ class Livres
         return $this;
     }
 
-    public function getSlag(): ?string
+    public function getSlug(): ?string
     {
-        return $this->slag;
+        return $this->slug;
     }
 
-    public function setSlag(string $Slag): static
+    public function setSlug(string $Slug): static
     {
-        $this->slag = $Slag;
+        $this->slug = $Slug;
 
+        return $this;
+    }
+
+    public function generateSlug(SluggerInterface $slugger): self
+    {
+        if (!$this->slug || $this->slug !== strtolower($this->slug)) {
+            $this->slug = $slugger->slug($this->titre)->lower();
+        }
         return $this;
     }
 
@@ -180,6 +199,48 @@ class Livres
     public function setCategorie(?Categories $categorie): self
     {
         $this->categorie = $categorie;
+
+        return $this;
+    }
+
+    /**
+     * @return Collection<int, LigneCommande>
+     */
+    public function getCommande(): Collection
+    {
+        return $this->commande;
+    }
+
+    public function addCommande(LigneCommande $commande): static
+    {
+        if (!$this->commande->contains($commande)) {
+            $this->commande->add($commande);
+            $commande->setLivre($this);
+        }
+
+        return $this;
+    }
+
+    public function removeCommande(LigneCommande $commande): static
+    {
+        if ($this->commande->removeElement($commande)) {
+            // set the owning side to null (unless already changed)
+            if ($commande->getLivre() === $this) {
+                $commande->setLivre(null);
+            }
+        }
+
+        return $this;
+    }
+
+    public function getStock(): ?int
+    {
+        return $this->stock;
+    }
+
+    public function setStock(?int $stock): static
+    {
+        $this->stock = $stock;
 
         return $this;
     }

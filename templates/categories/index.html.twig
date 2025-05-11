@@ -1,68 +1,69 @@
 {% extends 'base.html.twig' %}
 
-{% block title %}Gestion des Catégories{% endblock %}
+{% block title %}Gestion des Catégories
+{% endblock %}
 
 {% block body %}
-<div class="container mt-5" style="max-width: 95%;">
-  <!-- Header Section with Search -->
-  <div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-3">
-    <div>
-      <h2 class="text-dark fw-bold">Gestion des Catégories</h2>
-      <p class="text-muted mb-0">Consultez et gérez vos catégories facilement.</p>
-    </div>
-    
-    <div class="d-flex align-items-center gap-3">
-      <!-- Search Bar -->
-      <form method="get" action="{{ path('admin_categories') }}" class="position-relative" style="min-width: 250px;">
-        <div class="input-group">
-          <span class="input-group-text bg-white border-end-0">
-            <i class="bi bi-search"></i>
-          </span>
-          <input type="search" 
-                 name="q" 
-                 class="form-control border-start-0 ps-0" 
-                 placeholder="Rechercher..."
-                 value="{{ app.request.query.get('q') }}"
-                 style="border-radius: 25px; padding-left: 10px;">
-        </div>
-      </form>
-      
-      <!-- Add Button -->
-      <a href="{{path('admin_categories_create')}}" class="btn text-white flex-shrink-0" 
-        style="background-color: rgb(38, 109, 109); border-radius: 25px; padding: 10px 25px; font-size: 14px; transition: 0.3s;">
-        <i class="bi bi-plus-circle me-2"></i>Ajouter
-      </a>
-    </div>
-  </div>
+	<div
+		class="container mt-5" style="max-width: 95%;">
+		<!-- Header Section with Search -->
+		<div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-3">
+			<div>
+				<h2 class="text-dark fw-bold">Gestion des Catégories</h2>
+				<p class="text-muted mb-0">Consultez et gérez vos catégories facilement.</p>
+			</div>
 
-  <!-- Categories Cards Section -->
-  <div class="row g-4">
-    {% for c in cat %}
-    <div class="col-12 col-sm-6 col-md-4 col-lg-3">
-      <div class="card shadow-sm h-100">
-        <div class="card-body d-flex flex-column justify-content-between">
-          <span class="badge bg-primary position-absolute top-0 start-0 m-2"
-            style="border-radius: 12px; font-size: 11px;">
-            #{{ c.id }}
-          </span>
-          <div class="mb-3">
-            <h5 class="card-title text-center" style="color: rgb(38, 109, 109);">{{ c.libelle }}</h5>
-          </div>
-          <div class="text-center mt-auto">
-            <a href="{{ path('categorie_delete', {id: c.id}) }}" 
-               class="btn btn-outline-danger btn-sm"
-               onclick="return confirm('Êtes-vous sûr de vouloir supprimer cette catégorie ?')">
-              <i class="bi bi-trash"></i> Supprimer
-            </a>
-          </div>
-        </div>
-      </div>
-    </div>
-    {% else %}
-    <div class="col-12 text-center text-muted">
-      Aucune catégorie trouvée.
-    </div>
-    {% endfor %}
-  </div>
-</div>
+			<div
+				class="d-flex align-items-center gap-3">
+				<!-- Search Bar -->
+				<form method="get" action="{{ path('admin_categories') }}" class="position-relative" style="min-width: 250px;">
+					<div class="input-group">
+						<span class="input-group-text bg-white border-end-0">
+							<i class="bi bi-search"></i>
+						</span>
+						<input type="search" name="q" class="form-control border-start-0 ps-0" placeholder="Rechercher..." value="{{ app.request.query.get('q') }}" style="border-radius: 25px; padding-left: 10px;">
+					</div>
+				</form>
+
+				<!-- Add Button -->
+				<a href="{{path('admin_categories_create')}}" class="btn text-white flex-shrink-0" style="background-color: rgb(38, 109, 109); border-radius: 25px; padding: 10px 25px; font-size: 14px; transition: 0.3s;">
+					<i class="bi bi-plus-circle me-2"></i>Ajouter
+				</a>
+			</div>
+		</div>
+
+		<!-- Categories Cards Section -->
+		<div class="row g-4">
+			{% for c in cat %}
+				<div class="col-12 col-sm-6 col-md-4 col-lg-3">
+					<div class="card shadow-sm h-100">
+						<div class="card-body d-flex flex-column justify-content-between">
+							<span class="badge bg-primary position-absolute top-0 start-0 m-2" style="border-radius: 12px; font-size: 11px;">
+								#{{ c.id }}
+							</span>
+							<div class="mb-3">
+								<h5 class="card-title text-center" style="color: rgb(38, 109, 109);">{{ c.libelle }}</h5>
+							</div>
+							<div class="text-center mt-auto">
+								<a href="{{ path('categorie_delete', {id: c.id}) }}" class="btn btn-outline-danger btn-sm" onclick="return confirm('Êtes-vous sûr de vouloir supprimer cette catégorie ?')">
+									<i class="bi bi-trash"></i>
+									Supprimer
+								</a>
+							</div>
+						</div>
+					</div>
+				</div>
+			{% else %}
+				<div class="col-12 text-center text-muted">
+					Aucune catégorie trouvée.
+				</div>
+			{% endfor %}
+		</div>
+		{# Pagination #}
+		{% if cat|length > 0 %}
+			<div class="d-flex justify-content-center mt-4">
+				{{ knp_pagination_render(cat) }}
+			</div>
+		{% endif %}
+	</div>
 {% endblock %}

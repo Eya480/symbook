@@ -11,7 +11,6 @@ use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Component\String\Slugger\SluggerInterface;
-use Symfony\Component\Security\Http\Attribute\IsGranted;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\File\Exception\FileException;
 
@@ -77,7 +76,8 @@ final class LivresController extends AbstractController
         }
         $em->remove($livre);
         $em->flush();
-        return new Response('Livre a été supprimée avec succés');
+        $this->addFlash('success', 'Le Livre a été supprimé avec succés');
+        return $this->redirectToRoute('admin_livres');
     }
 
     // Rechercher un livre par titre

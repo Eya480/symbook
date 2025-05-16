@@ -38,7 +38,9 @@ final class RegistrationController extends AbstractController
 
         if ($form->isSubmitted() && $form->isValid()) {
 
-            //hasher le pwd
+            $plainPassword = $form->get('password')->getData();
+            $hashedPassword = $userPwdHasher->hashPassword($user, $plainPassword);
+            $user->setPassword($hashedPassword);
 
             $em->persist($user);
             $em->flush();
@@ -107,7 +109,7 @@ final class RegistrationController extends AbstractController
 
         // marquer l'utilisateur comme vérifié
         $user->setIsVerified(true);
-        
+
         $entityManager->flush();
 
         $this->addFlash('success', 'Votre adresse email a été vérifiée avec succès.');

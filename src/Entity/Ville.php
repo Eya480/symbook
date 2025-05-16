@@ -24,9 +24,16 @@ class Ville
     #[ORM\OneToMany(targetEntity: Utilisateur::class, mappedBy: 'ville')]
     private Collection $utilisateurs;
 
+    /**
+     * @var Collection<int, Adresse>
+     */
+    #[ORM\OneToMany(targetEntity: Adresse::class, mappedBy: 'ville')]
+    private Collection $pays;
+
     public function __construct()
     {
         $this->utilisateurs = new ArrayCollection();
+        $this->pays = new ArrayCollection();
     }
 
     public function getId(): ?int
@@ -70,6 +77,36 @@ class Ville
             // set the owning side to null (unless already changed)
             if ($utilisateur->getVille() === $this) {
                 $utilisateur->setVille(null);
+            }
+        }
+
+        return $this;
+    }
+
+    /**
+     * @return Collection<int, Adresse>
+     */
+    public function getPays(): Collection
+    {
+        return $this->pays;
+    }
+
+    public function addPay(Adresse $pay): static
+    {
+        if (!$this->pays->contains($pay)) {
+            $this->pays->add($pay);
+            $pay->setVille($this);
+        }
+
+        return $this;
+    }
+
+    public function removePay(Adresse $pay): static
+    {
+        if ($this->pays->removeElement($pay)) {
+            // set the owning side to null (unless already changed)
+            if ($pay->getVille() === $this) {
+                $pay->setVille(null);
             }
         }
 

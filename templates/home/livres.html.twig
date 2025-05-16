@@ -26,20 +26,38 @@
 			</div>
 
 			<div class="nav-actions">
-				<div class="nav-links search-icon">
-					<a href="{{ path('app_register') }}">
-						<i class="fas fa-user-plus me-1"></i>Inscription</a>
-				</div>
+				{% if app.user %}
+					{# Affichage pour utilisateur connecté #}
+					<div class="nav-links">
+						<a href="{{path('app_compte')}}">
+							<i class="fas fa-user me-1"></i>Mon compte</a>
+					</div>
+					<div class="nav-links">
+						<a href="{{ path('app_logout') }}">
+							<i class="fas fa-sign-out-alt me-1"></i>Déconnexion</a>
+					</div>
+				{% else %}
+					{# Affichage pour visiteur non connecté #}
+					<div class="nav-links search-icon">
+						<a href="{{ path('app_register') }}">
+							<i class="fas fa-user-plus me-1"></i>Inscription</a>
+					</div>
+					<div class="nav-links">
+						<a href="{{ path('app_login') }}">
+							<i class="fas fa-sign-in-alt me-1"></i>Connexion</a>
+					</div>
+				{% endif %}
+
 				<div class="search-icon">
 					<i class="fas fa-search"></i>
 				</div>
 				<a href="{{ path('app_panier') }}" class="position-relative text-decoration-none">
-                    <i class="fas fa-shopping-bag fs-4 text-dark"></i>
-                    {% set panier = app.session.get('panier')|default([]) %}
-                    <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger" id="cart-counter" style="display: {{ panier|length > 0 ? 'flex' : 'none' }}">
-                        {{ panier|reduce((total, qty) => total + qty, 0) }}
-                    </span>
-                </a>
+					<i class="fas fa-shopping-bag fs-4 text-white"></i>
+					{% set panier = app.session.get('panier')|default([]) %}
+					<span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger" id="cart-counter" style="display: {{ panier|length > 0 ? 'flex' : 'none' }}">
+						{{ panier|reduce((total, qty) => total + qty, 0) }}
+					</span>
+				</a>
 			</div>
 			<div class="hamburger">
 				<i class="fas fa-bars"></i>
@@ -48,6 +66,20 @@
 	</header>
 {% endblock %}
 {% block body %}
+	{# Modal pour l'image agrandie #}
+	<div class="modal fade" id="imageModal" tabindex="-1" aria-hidden="true">
+		<div class="modal-dialog modal-dialog-centered modal-xl">
+			<div class="modal-content bg-transparent border-0">
+				<div class="modal-header border-0">
+					<button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+				</div>
+				<div class="modal-body text-center p-0">
+					<img id="modalImage" src="" alt="" class="img-fluid rounded-3 shadow-lg">
+				</div>
+			</div>
+		</div>
+	</div>
+
 	<div class="main-container">
 		<div class="page-header">
 			<h3 class="page-title">Tous Nos Livres</h3>
@@ -113,7 +145,7 @@
 		{% if livres|length > 0 %}
 			<div class="all-books-grid">
 				{% for livre in livres %}
-					<div class="book-card">
+					<div class="book-card" onclick="openImageModal('{{ asset('uploads/images/' ~ livre.image)|escape('js') }}', '{{ livre.titre|escape('js') }}', '{{ livre.resume|escape('js') }}', '{{ livre.prix|escape('js') }}', {{ livre.id }})">
 						<div class="book-inner">
 							<div class="book-cover">
 								<div class="book-cover-img-container">
@@ -163,13 +195,29 @@
 			</div>
 		{% endif %}
 	</div>
-
 	<script>
-		document.querySelectorAll('.add-to-cart').forEach(btn => {
-btn.addEventListener('click', async function (e) {
-e.preventDefault();
-const livreId = this.dataset.id;
 
+		function openImageModal(imageSrc, title) {
+const modal = new bootstrap.Modal(document.getElementById('imageModal'));
+const modalImg = document.getElementById('modalImage');
+
+modalImg.src = imageSrc;
+modalImg.alt = title;
+
+// Préchargement de l'image pour éviter les retards
+const img = new Image();
+img.src = imageSrc;
+img.onload = function () {
+modal.show();
+};
+
+// Gestion des erreurs de chargement
+img.onerror = function () {
+console.error("Erreur de chargement de l'image");
+};
+}
+// Fonction générique pour ajouter au panier
+async function addToCart(livreId) {
 try {
 const response = await fetch (`/panier/ajouter/${livreId}`, {
 method: 'POST',
@@ -196,15 +244,26 @@ counter.classList.remove('pulse');
 }, 500);
 }
 
-// Feedback visuel sur le bouton
-this.innerHTML = '<i class="fas fa-check"></i> Ajouté';
-setTimeout(() => {
-this.innerHTML = 'Ajouter';
-}, 2000);
+// Feedback visuel (vous pourriez ajouter un toast ici)
+console.log('Livre ajouté au panier');
 }
 } catch (error) {
 console.error('Erreur:', error);
 }
+}
+
+// Gestion des clics sur les boutons "Ajouter au panier"
+document.querySelectorAll('.add-to-cart').forEach(btn => {
+btn.addEventListener('click', function (e) {
+e.stopPropagation(); // Empêche le déclenchement du clic sur la carte
+const livreId = this.dataset.id;
+addToCart(livreId);
+
+// Feedback visuel sur le bouton
+this.innerHTML = '<i class="fas fa-check"></i> Ajouté';
+setTimeout(() => {
+this.innerHTML = '<i class="fas fa-cart-plus"></i> Ajouter';
+}, 2000);
 });
 });
 	</script>

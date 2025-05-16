@@ -9,40 +9,58 @@
 	<div class="particles" id="particles"></div>
 
 	<!-- Header -->
-	<!-- Effets de particules -->
-    <div class="particles" id="particles"></div>
+	<header class="glass-card">
+		<nav class="navbar">
+			<a href="#" class="logo">Symbook</a>
 
-    <!-- Header -->
-    <header class="glass-card">
-        <nav class="navbar">
-            <a href="#" class="logo">Symbook</a>
+			<div class="nav-links">
+				<a href="{{ path('home') }}">
+					<i class="fas fa-home me-1"></i>Accueil</a>
+				<a href="{{ path('home_livre') }}">
+					<i class="fas fa-book me-1"></i>Livres</a>
+				<a href="#">
+					<i class="fas fa-envelope me-1"></i>Contact</a>
+			</div>
 
-            <div class="nav-links">
-                <a href="{{ path('home') }}"><i class="fas fa-home me-1"></i>Accueil</a>
-                <a href="{{ path('home_livre') }}"><i class="fas fa-book me-1"></i>Livres</a>
-                <a href="#"><i class="fas fa-envelope me-1"></i>Contact</a>
-            </div>
+			<div class="nav-actions">
+				{% if app.user %}
+					{# Affichage pour utilisateur connecté #}
+					<div class="nav-links">
+						<a href="{{path('app_compte')}}">
+							<i class="fas fa-user me-1"></i>Mon compte</a>
+					</div>
+					<div class="nav-links">
+						<a href="{{ path('app_logout') }}">
+							<i class="fas fa-sign-out-alt me-1"></i>Déconnexion</a>
+					</div>
+				{% else %}
+					{# Affichage pour visiteur non connecté #}
+					<div class="nav-links search-icon">
+						<a href="{{ path('app_register') }}">
+							<i class="fas fa-user-plus me-1"></i>Inscription</a>
+					</div>
+					<div class="nav-links">
+						<a href="{{ path('app_login') }}">
+							<i class="fas fa-sign-in-alt me-1"></i>Connexion</a>
+					</div>
+				{% endif %}
 
-            <div class="nav-actions">
-                <div class="nav-links search-icon">
-                    <a href="{{ path('app_register') }}"><i class="fas fa-user-plus me-1"></i>Inscription</a>
-                </div>
-                <div class="search-icon">
-                    <i class="fas fa-search"></i>
-                </div>
-                <a href="{{ path('app_panier') }}" class="position-relative text-decoration-none">
-                    <i class="fas fa-shopping-bag fs-4 text-dark"></i>
-                    {% set panier = app.session.get('panier')|default([]) %}
-                    <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger" id="cart-counter" style="display: {{ panier|length > 0 ? 'flex' : 'none' }}">
-                        {{ panier|reduce((total, qty) => total + qty, 0) }}
-                    </span>
-                </a>
-            </div>
-            <div class="hamburger">
-                <i class="fas fa-bars"></i>
-            </div>
-        </nav>
-    </header>
+				<div class="search-icon">
+					<i class="fas fa-search"></i>
+				</div>
+				<a href="{{ path('app_panier') }}" class="position-relative text-decoration-none">
+					<i class="fas fa-shopping-bag fs-4 text-white"></i>
+					{% set panier = app.session.get('panier')|default([]) %}
+					<span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger" id="cart-counter" style="display: {{ panier|length > 0 ? 'flex' : 'none' }}">
+						{{ panier|reduce((total, qty) => total + qty, 0) }}
+					</span>
+				</a>
+			</div>
+			<div class="hamburger">
+				<i class="fas fa-bars"></i>
+			</div>
+		</nav>
+	</header>
 {% endblock %}
 {% block body %}
 

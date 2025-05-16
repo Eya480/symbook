@@ -35,6 +35,9 @@ class Commande
     #[ORM\ManyToOne(inversedBy: 'commandes')]
     private ?Utilisateur $Utilisateur = null;
 
+    #[ORM\Column(length: 255, nullable: true)]
+    private ?string $stripePaymentId = null;
+
     /**
      * @var Collection<int, LigneCommande>
      */
@@ -163,6 +166,30 @@ class Commande
     public function setReference(string $Reference): static
     {
         $this->Reference = $Reference;
+
+        return $this;
+    }
+
+    /**
+     * Get the value of stripePaymentId
+     *
+     * @return ?string
+     */
+    public function getStripePaymentId(): ?string
+    {
+        return $this->stripePaymentId;
+    }
+
+    /**
+     * Set the value of stripePaymentId
+     *
+     * @param ?string $stripePaymentId
+     *
+     * @return self
+     */
+    public function setStripePaymentId(?string $stripePaymentId): self
+    {
+        $this->stripePaymentId = $stripePaymentId;
 
         return $this;
     }

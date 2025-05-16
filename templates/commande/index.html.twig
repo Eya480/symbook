@@ -1,6 +1,6 @@
 {% extends 'base.html.twig' %}
 
-{% block title %}Passer la commande | Symbook
+{% block title %}Commande | Symbook
 {% endblock %}
 
 {% block stylesheets %}
@@ -26,17 +26,34 @@
 			</div>
 
 			<div class="nav-actions">
-				<div class="nav-links search-icon">
-					<a href="{{ path('app_register') }}">
-						<i class="fas fa-user-plus me-1"></i>Inscription</a>
-				</div>
+				{% if app.user %}
+					<div class="nav-links">
+						<a href="{{ path('app_compte') }}">
+							<i class="fas fa-user me-1"></i>Mon compte</a>
+					</div>
+					<div class="nav-links">
+						<a href="{{ path('app_logout') }}">
+							<i class="fas fa-sign-out-alt me-1"></i>Déconnexion</a>
+					</div>
+				{% else %}
+					<div class="nav-links search-icon">
+						<a href="{{ path('app_register') }}">
+							<i class="fas fa-user-plus me-1"></i>Inscription</a>
+					</div>
+					<div class="nav-links">
+						<a href="{{ path('app_login') }}">
+							<i class="fas fa-sign-in-alt me-1"></i>Connexion</a>
+					</div>
+				{% endif %}
+
 				<div class="search-icon">
 					<i class="fas fa-search"></i>
 				</div>
 				<a href="{{ path('app_panier') }}" class="position-relative text-decoration-none">
-					<i class="fas fa-shopping-bag fs-4 text-dark"></i>
-					<span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger" id="cart-counter" style="display: {{ app.session.get('panier')|length > 0 ? 'flex' : 'none' }}">
-						{{ app.session.get('panier')|reduce((total, qty) => total + qty, 0) }}
+					<i class="fas fa-shopping-bag fs-4 text-white"></i>
+					{% set panier = app.session.get('panier')|default([]) %}
+					<span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger" id="cart-counter" style="display: {{ panier|length > 0 ? 'flex' : 'none' }}">
+						{{ panier|reduce((total, qty) => total + qty, 0) }}
 					</span>
 				</a>
 			</div>
@@ -50,312 +67,366 @@
 {% block body %}
 	<div class="main-container" style="margin-top: 100px;">
 		<div class="page-header">
-			<h1 class="page-title">
-				<i class="fas fa-shopping-cart me-2"></i>Finaliser votre commande</h1>
-			<p class="page-subtitle">Vérifiez votre panier et saisissez vos informations</p>
+			<h1 class="page-title">Finalisation de votre commande</h1>
+			<p class="page-subtitle">Vérifiez vos informations avant de valider</p>
 		</div>
 
-		{% for message in app.flashes('warning') %}
-			<div class="alert alert-warning">
-				<i class="fas fa-exclamation-triangle me-2"></i>
-				{{ message }}
-			</div>
-		{% endfor %}
-		{% for message in app.flashes('error') %}
-			<div class="alert alert-danger">
-				<i class="fas fa-exclamation-circle me-2"></i>
-				{{ message }}
-			</div>
-		{% endfor %}
+		<div
+			class="row">
+			<!-- Étape 1: Livraison -->
+			<div class="col-md-6">
+				<div class="glass-card p-4 mb-4">
+					<h3>
+						<i class="fas fa-truck me-2"></i>
+						Adresse de livraison
+					</h3>
 
-		<div class="panier-items">
-			{% for item in items %}
-				<div class="panier-item glass-card" style="margin-bottom: 5px;">
-					<div class="panier-item-cover">
-						<img src="{{ asset('Uploads/images/' ~ item.livre.image) }}" alt="{{ item.livre.titre }}">
-					</div>
-					<div class="panier-item-details">
-						<h4>
-							<i class="fas fa-book-open me-2"></i>
-							{{ item.livre.titre }}</h4>
-						<p class="author">
-							<i class="fas fa-user-edit me-2"></i>
-							{{ item.livre.editeur }}</p>
-						<p class="author">
-							<i class="fas fa-tag me-2"></i>Prix Unitaire:
-							{{ item.livre.prix }}
-							DT</p>
-						<div class="panier-item-actions">
-							<span class="quantity">
-								<i class="fas fa-cubes me-2"></i>Quantité:
-								{{ item.quantite }}</span>
-							<span class="price">
-								<i class="fas fa-money-bill-wave me-2"></i>Sous-total:
-								{{ (item.livre.prix * item.quantite)|number_format(2) }}
-								DT</span>
+					{% if app.user.adresses|length > 0 %}
+						<form id="livraisonForm">
+							{% for adresse in app.user.adresses %}
+								<div class="form-check mb-3">
+									<input class="form-check-input" type="radio" name="adresseLivraison" id="adresse{{ loop.index }}" value="{{ adresse.id }}" {{ loop.first ? 'checked' : '' }}>
+									<label class="form-check-label" for="adresse{{ loop.index }}">
+										<strong>{{ adresse.nom }}</strong><br>
+										{{ adresse.rue }},
+										{{ adresse.codePostal }}
+										{{ adresse.ville }}<br>
+										{{ adresse.pays }}
+									</label>
+								</div>
+							{% endfor %}
+
+							<button type="button" class="btn btn-outline-primary mt-2" data-bs-toggle="modal" data-bs-target="#newAddressModal">
+								<i class="fas fa-plus me-1"></i>
+								Ajouter une nouvelle adresse
+							</button>
+						</form>
+					{% else %}
+						<div class="alert alert-warning">
+							<p>Aucune adresse enregistrée. Veuillez en ajouter une pour continuer.</p>
+							<button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#newAddressModal">
+								<i class="fas fa-plus me-1"></i>
+								Ajouter une adresse
+							</button>
 						</div>
-					</div>
+					{% endif %}
 				</div>
-			{% endfor %}
+			</div>
 
-			<div class="panier-total glass-card">
-				<h3>
-					<i class="fas fa-calculator me-2"></i>Total:
-					<span id="cart-total">{{ total|number_format(2) }}
-						DT</span>
-				</h3>
+			<!-- Étape 2: Paiement -->
+			<div class="col-md-6">
+				<div class="glass-card p-4 mb-4">
+					<h3>
+						<i class="fas fa-credit-card me-2"></i>
+						Mode de paiement
+					</h3>
+					<form id="paiementForm">
+						<div class="form-check mb-3">
+							<input class="form-check-input" type="radio" name="modePaiement" id="paiementLivraison" value="livraison" checked>
+							<label class="form-check-label" for="paiementLivraison">
+								Paiement à la livraison
+							</label>
+						</div>
+						<div class="form-check mb-3">
+							<input class="form-check-input" type="radio" name="modePaiement" id="paiementCarte" value="carte">
+							<label class="form-check-label" for="paiementCarte">
+								Carte bancaire
+							</label>
+						</div>
+
+						<div class="mt-3" id="carteFields" style="display: none;">
+							<div class="mb-3">
+								<label class="form-label">Informations de paiement</label>
+								<div id="card-element" class="form-control"></div>
+								<div id="card-errors" class="text-danger mt-2" role="alert"></div>
+							</div>
+						</div>
+					</form>
+				</div>
 			</div>
 		</div>
 
-		<div class="commande-form glass-card">
+		<!-- Récapitulatif de la commande -->
+		<div class="glass-card p-4 mb-4">
 			<h3>
-				<i class="fas fa-truck me-2"></i>Informations de livraison</h3>
-			<form action="{{ path('app_commande_confirmer') }}" method="POST">
-				<div class="mb-3">
-					<label for="adresseLivraison" class="form-label">
-						<i class="fas fa-map-marker-alt me-2"></i>Adresse de livraison</label>
-					<textarea class="form-control" id="adresseLivraison" name="adresseLivraison" rows="4" required placeholder="Entrez votre adresse complète"></textarea>
-				</div>
-				<button type="submit" class="btn btn-primary">
-					<i class="fas fa-check-circle me-2"></i>Confirmer la commande</button>
+				<i class="fas fa-list-alt me-2"></i>
+				Récapitulatif de votre commande
+			</h3>
+
+			<div class="table-responsive">
+				<table class="table">
+					<thead>
+						<tr>
+							<th>Livre</th>
+							<th>Prix unitaire</th>
+							<th>Quantité</th>
+							<th>Total</th>
+						</tr>
+					</thead>
+					<tbody>
+						{% for item in items %}
+							<tr>
+								<td>
+									<div class="d-flex align-items-center">
+										<img src="{{ asset('Uploads/images/' ~ item.livre.image) }}" alt="{{ item.livre.titre }}" class="img-thumbnail me-3" width="60">
+										<div>
+											<strong>{{ item.livre.titre }}</strong><br>
+											<small>{{ item.livre.editeur }}</small>
+										</div>
+									</div>
+								</td>
+								<td>{{ item.livre.prix }}
+									DT</td>
+								<td>{{ item.quantite }}</td>
+								<td>{{ item.livre.prix * item.quantite }}
+									DT</td>
+							</tr>
+						{% endfor %}
+					</tbody>
+					<tfoot>
+						<tr>
+							<td colspan="3" class="text-end">
+								<strong>Sous-total :</strong>
+							</td>
+							<td>{{ total }}
+								DT</td>
+						</tr>
+						<tr>
+							<td colspan="3" class="text-end">
+								<strong>Livraison :</strong>
+							</td>
+							<td>
+								{% if total >= 300%}
+									Gratuite
+								{% else %}
+									8 DT
+								{% endif %}
+							</td>
+						</tr>
+						<tr>
+							<td colspan="3" class="text-end">
+								<strong>Total :</strong>
+							</td>
+							<td>
+								{% if total >= 300 %}
+									{{ total }}
+									DT
+								{% else %}
+									{{ total + 8 }}
+									DT
+								{% endif %}
+							</td>
+						</tr>
+					</tfoot>
+				</table>
+				{% if modePaiement is defined and total < 300 %}
+					<div class="alert alert-info mt-3">
+						<i class="fas fa-info-circle me-2"></i>
+						Frais de livraison: 8 DT (gratuits à partir de 300 DT d'achat)
+					</div>
+				{% endif %}
+                {% if modePaiement is defined and total > 300 %}
+					<div class="alert alert-info mt-3">
+						<i class="fas fa-info-circle me-2"></i>
+						Frais de livraison: 0 DT 
+					</div>
+				{% endif %}
+			</div>
+
+			<div class="d-flex justify-content-between mt-4">
 				<a href="{{ path('app_panier') }}" class="btn btn-secondary">
-					<i class="fas fa-arrow-left me-2"></i>Retour au panier</a>
-			</form>
+					<i class="fas fa-arrow-left me-1"></i>
+					Retour au panier
+				</a>
+				<button type="button" class="btn btn-primary" id="confirmerCommande">
+					<i class="fas fa-check me-1"></i>
+					Confirmer la commande
+				</button>
+			</div>
+		</div>
+	</div>
+
+	<!-- Modal pour nouvelle adresse -->
+	<div class="modal fade" id="newAddressModal" tabindex="-1" aria-hidden="true">
+		<div class="modal-dialog">
+			<div class="modal-content glass-card">
+				<div class="modal-header">
+					<h5 class="modal-title">Nouvelle adresse</h5>
+					<button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+				</div>
+				<div class="modal-body">
+					<form id="newAddressForm">
+						<div class="mb-3">
+							<label for="nomAdresse" class="form-label">Nom de l'adresse (ex: Maison, Bureau)</label>
+							<input type="text" class="form-control" id="nomAdresse" required>
+						</div>
+						<div class="mb-3">
+							<label for="rue" class="form-label">Adresse</label>
+							<input type="text" class="form-control" id="rue" required>
+						</div>
+						<div class="row">
+							<div class="col-md-6 mb-3">
+								<label for="codePostal" class="form-label">Code postal</label>
+								<input type="text" class="form-control" id="codePostal" required>
+							</div>
+							<div class="col-md-6 mb-3">
+								<label for="ville" class="form-label">Ville</label>
+								<input type="text" class="form-control" id="ville" required>
+							</div>
+						</div>
+						<div class="mb-3">
+							<label for="pays" class="form-label">Pays</label>
+							<input type="text" class="form-control" id="pays" value="Tunisie" required>
+						</div>
+					</form>
+				</div>
+				<div class="modal-footer">
+					<button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annuler</button>
+					<button type="button" class="btn btn-primary" id="saveAddressBtn">Enregistrer</button>
+				</div>
+			</div>
 		</div>
 	</div>
 {% endblock %}
 
 {% block javascripts %}
 	{{ parent() }}
-	<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js" integrity="sha384-geWF76RCwLtnZ8qwWowPQNguL3RmwHVBC9FhGdlKrxdiJJigb/j/68SIy3Te4Bkz" crossorigin="anonymous"></script>
-	<style>
-	/* Variables globales */:root
-	{
-		--primary-color: #007bff;
-		--primary-hover: #0056b3;
-		--secondary-color: #6c757d;
-		--secondary-hover: #5a6268;
-		--glass-bg: rgba(255, 255, 255, 0.1);
-		--text-color: #fff;
-		--border-radius: 10px;
-		--spacing-unit: 1rem;
-		--transition: all 0.3s ease;
-	}
+	<script src="https://js.stripe.com/v3/"></script>
+	<script>
+		document.addEventListener('DOMContentLoaded', function () { // Initialiser Stripe
+const stripe = Stripe('{{ stripePublicKey }}');
+const elements = stripe.elements();
+const cardElement = elements.create('card', {
+style: {
+base: {
+fontSize: '16px',
+color: '#32325d',
+'::placeholder': {
+color: '#aab7c4'
+}
+},
+invalid: {
+color: '#dc3545'
+}
+}
+});
+cardElement.mount('#card-element');
 
-	/* Liste des articles */
-	.panier-items {
-		display: flex;
-		flex-direction: column;
-		gap: var(--spacing-unit);
-		margin-bottom: 2rem;
-	}
+// Afficher/masquer les champs de carte bancaire
+document.querySelectorAll('input[name="modePaiement"]').forEach(radio => {
+radio.addEventListener('change', function () {
+document.getElementById('carteFields').style.display = this.value === 'carte' ? 'block' : 'none';
+});
+});
 
-	.panier-item {
-		display: flex;
-		align-items: center;
-		padding: 20px;
-		gap: 1rem;
-		border-radius: var(--border-radius);
-		border: 1px solid rgba(255, 255, 255, 0.2);
-		background: var(--glass-bg);
-		transition: var(--transition);
-	}
+// Gestion des erreurs de carte
+cardElement.on('change', function (event) {
+const errorElement = document.getElementById('card-errors');
+if (event.error) {
+errorElement.textContent = event.error.message;
+} else {
+errorElement.textContent = '';
+}
+});
 
-	.panier-item:hover {
-		transform: translateY(-2px);
-		box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-	}
+// Gestion de l'ajout d'une nouvelle adresse
+document.getElementById('saveAddressBtn').addEventListener('click', async function () {
+const formData = {
+nom: document.getElementById('nomAdresse').value,
+rue: document.getElementById('rue').value,
+codePostal: document.getElementById('codePostal').value,
+ville: document.getElementById('ville').value,
+pays: document.getElementById('pays').value
+};
 
-	.panier-item-cover {
-		width: 80px;
-		height: 120px;
-		border-radius: 5px;
-		margin-right: 10px;
-		overflow: hidden;
-		border: 1px solid rgba(255, 255, 255, 0.2);
-	}
+if (! formData.nom || ! formData.rue || ! formData.codePostal || ! formData.ville || ! formData.pays) {
+alert('Veuillez remplir tous les champs');
+return;
+}
 
-	.panier-item-cover img {
-		width: 100%;
-		height: 100%;
-		object-fit: cover;
-	}
+try {
+const response = await fetch('{{ path("app_ajouter_adresse") }}', {
+method: 'POST',
+headers: {
+'Content-Type': 'application/json',
+'X-Requested-With': 'XMLHttpRequest'
+},
+body: JSON.stringify(formData)
+});
 
-	.panier-item-details {
-		flex: 1;
-	}
+const data = await response.json();
 
-	.panier-item-details h4 {
-		font-size: 1.25rem;
-		margin: 0;
-		color: var(--text-color);
-		display: flex;
-		align-items: center;
-	}
+if (! response.ok || ! data.success) {
+throw new Error(data.message || 'Erreur lors de l\'ajout de l\'adresse');
+}
 
-	.panier-item-details .author {
-		font-size: 0.9rem;
-		color: var(--text-color);
-		margin: 0.5rem 0;
-		font-style: italic;
-		display: flex;
-		align-items: center;
-	}
+const container = document.getElementById('livraisonForm') || document.querySelector('.glass-card.p-4.mb-4');
+container.insertAdjacentHTML('afterbegin', data.html);
 
-	.panier-item-actions {
-		display: flex;
-		align-items: center;
-		gap: 1.5rem;
-		margin-top: 0.5rem;
-	}
+const modal = bootstrap.Modal.getInstance(document.getElementById('newAddressModal'));
+if (modal) {
+modal.hide();
+}
 
-	.quantity {
-		font-size: 1rem;
-		color: var(--text-color);
-		display: flex;
-		align-items: center;
-	}
+document.getElementById('newAddressForm').reset();
+} catch (error) {
+console.error('Erreur:', error);
+alert(error.message || 'Une erreur est survenue lors de l\'ajout de l\'adresse');
+}
+});
 
-	.price {
-		font-size: 1rem;
-		font-weight: 500;
-		color: lightblue;
-		display: flex;
-		align-items: center;
-	}
+// Confirmation de la commande
+document.getElementById('confirmerCommande').addEventListener('click', async function () {
+const adresseLivraison = document.querySelector('input[name="adresseLivraison"]:checked') ?. value;
+const modePaiement = document.querySelector('input[name="modePaiement"]:checked').value;
 
-	/* Total */
-	.panier-total {
-		padding: 20px;
-		border-radius: var(--border-radius);
-		border: 1px solid rgba(255, 255, 255, 0.2);
-		background: var(--glass-bg);
-		display: flex;
-		justify-content: space-between;
-		align-items: center;
-	}
+if (! adresseLivraison) {
+alert('Veuillez sélectionner une adresse de livraison');
+return;
+}
 
-	.panier-total h3 {
-		margin: 0;
-		font-size: 1.5rem;
-		color: var(--text-color);
-		display: flex;
-		align-items: center;
-	}
+const formData = new FormData();
+formData.append('adresseLivraison', adresseLivraison);
+formData.append('modePaiement', modePaiement);
 
-	/* Formulaire de livraison */
-	.commande-form {
-		padding: 2rem;
-		border-radius: var(--border-radius);
-		border: 1px solid rgba(255, 255, 255, 0.2);
-		background: var(--glass-bg);
-		margin-top: 2rem;
-	}
+try {
+const response = await fetch('{{ path("app_commande_confirmer") }}', {
+method: 'POST',
+body: formData
+});
 
-	.commande-form h3 {
-		font-size: 1.5rem;
-		color: var(--text-color);
-		margin-bottom: 1rem;
-		display: flex;
-		align-items: center;
-	}
+const data = await response.json();
 
-	.form-label {
-		display: flex;
-		align-items: center;
-		color: var(--text-color);
-	}
+if (response.ok) {
+if (data.redirect) {
+window.location.href = data.redirect;
+} else if (data.clientSecret && data.commandeId) { // Gérer le paiement Stripe
+const {error, paymentIntent} = await stripe.confirmCardPayment(data.clientSecret, {
+payment_method: {
+card: cardElement,
+billing_details: {
+email: '{{ app.user.email }}'
+}
+}
+});
 
-	.form-control {
-		background: rgba(255, 255, 255, 0.2);
-		border: 1px solid rgba(255, 255, 255, 0.3);
-		color: var(--text-color);
-		border-radius: var(--border-radius);
-	}
-
-	.form-control:focus {
-		background: rgba(255, 255, 255, 0.3);
-		border-color: var(--primary-color);
-		box-shadow: 0 0 5px rgba(0, 123, 255, 0.5);
-	}
-
-	/* Boutons */
-	.btn {
-		padding: 0.75rem 1.5rem;
-		font-size: 1rem;
-		border-radius: var(--border-radius);
-		transition: var(--transition);
-		margin-right: 1rem;
-		display: flex;
-		align-items: center;
-	}
-
-	.btn-primary {
-		background-color: var(--primary-color);
-		border-color: var(--primary-color);
-	}
-
-	.btn-primary:hover {
-		background-color: var(--primary-hover);
-		border-color: var(--primary-hover);
-	}
-
-	.btn-secondary {
-		background-color: var(--secondary-color);
-		border-color: var(--secondary-color);
-		color: black;
-		width: 30%;
-		margin-left: 700px;
-		display: block;
-	}
-
-	.btn-secondary:hover {
-		background-color: var(--secondary-hover);
-		border-color: var(--secondary-hover);
-	}
-
-	/* Alertes */
-	.alert {
-		margin-bottom: 1rem;
-		border-radius: var(--border-radius);
-		display: flex;
-		align-items: center;
-	}
-
-	/* Icônes */
-	.fas,
-	.far {
-		margin-right: 0.5rem;
-	}
-
-	/* Responsivité */
-	@media(max-width: 768px) {
-		.panier-item {
-			flex-direction: column;
-			align-items: flex-start;
-			text-align: center;
-		}
-
-		.panier-item-cover {
-			width: 120px;
-			height: 180px;
-			margin: 0 auto;
-		}
-
-		.panier-item-actions {
-			flex-direction: column;
-			gap: 1rem;
-			width: 100%;
-		}
-
-		.panier-total {
-			flex-direction: column;
-			gap: 1rem;
-			text-align: center;
-		}
-
-		.btn {
-			justify-content: center;
-		}
-	}
-</style>{% endblock %}
+if (error) {
+document.getElementById('card-errors').textContent = error.message;
+} else if (paymentIntent.status === 'succeeded') {
+window.location.href = '/commande/verifier-paiement/' + data.commandeId;
+}
+} else {
+alert('Réponse inattendue du serveur');
+}
+} else {
+console.error('Erreur serveur:', data.error);
+alert(data.error || 'Erreur lors de la confirmation de la commande');
+}
+} catch (error) {
+console.error('Erreur réseau:', error);
+alert('Une erreur est survenue: ' + error.message);
+}
+});
+});
+	</script>
+{% endblock %}

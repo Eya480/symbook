@@ -70,7 +70,7 @@ final class HomeController extends AbstractController
         $livres = $paginator->paginate(
             $livres, /* query NOT result */
             $request->query->getInt('page', 1), /* page number */
-            10 /* limit per page */
+            9 /* limit per page */
         );
 
         $lesPrix = array_keys([

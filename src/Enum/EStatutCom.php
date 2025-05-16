@@ -9,6 +9,7 @@ enum EStatutCom: string
     case SHIPPED = 'shipped';
     case DELIVERED = 'delivered';
     case CANCELLED = 'cancelled';
+    case PAYMENT_PENDING ='payment_pending';
 
     public function getLabel(): string
     {
@@ -18,6 +19,7 @@ enum EStatutCom: string
             self::SHIPPED => 'Expédiée',
             self::DELIVERED => 'Livrée',
             self::CANCELLED => 'Annulée',
+            self::PAYMENT_PENDING => 'Paiement en Attente'
         };
     }
 }

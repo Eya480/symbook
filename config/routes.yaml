@@ -1,5 +1,9 @@
 controllers:
-    resource:
-        path: ../src/Controller/
-        namespace: App\Controller
-    type: attribute
+  resource:
+    path: ../src/Controller/
+    namespace: App\Controller
+  type: attribute
+app_commande_confirmer:
+  path: /commande/confirmer
+  controller: App\Controller\CommandeController::confirmer
+  methods: POST

@@ -1,0 +1,10 @@
+<div class="form-check mb-3">
+	<input class="form-check-input" type="radio" name="adresseLivraison" id="adresse{{ loop.index }}" value="{{ adresse.id }}" checked>
+	<label class="form-check-label" for="adresse{{ loop.index }}">
+		<strong>{{ adresse.nom }}</strong><br>
+		{{ adresse.rue }},
+		{{ adresse.codePostal }}
+		{{ adresse.ville }}<br>
+		{{ adresse.pays }}
+	</label>
+</div></div>

@@ -3,23 +3,22 @@
 {% block title %}Hello CategoriesController!
 {% endblock %}
 {% block javascripts %}
-    {{ parent() }}
-    <script>
-        document.getElementById('livres_isbn').addEventListener('input', function(e) {
-            let value = e.target.value;
-            // Supprimer les caractères non numériques sauf X pour ISBN-10
-            e.target.value = value.replace(/[^0-9X-]/g, '');
-        });
-    </script>
+	{{ parent() }}
+	<script>
+		document.getElementById('livres_isbn').addEventListener('input', function (e) {
+let value = e.target.value;
+// Supprimer les caractères non numériques sauf X pour ISBN-10
+e.target.value = value.replace(/[^0-9X-]/g, '');
+});
+	</script>
 {% endblock %}
 {% block body %}
-	<br><br>
 	<h1>Ajout d'un Livre</h1>
 	{{form(f)}}
 		<style>
 			/* Conteneur global centré */
 			form {
-				max-width: 800px;
+				width: 800px;
 				margin: 50px auto;
 				padding: 2rem;
 				background: rgba(204, 201, 209, 0.65);
@@ -27,16 +26,17 @@
 				border-radius: 20px;
 				box-shadow: 0 10px 40px rgba(0, 0, 0, 0.15);
 				display: grid;
-				grid-template-columns: repeat(2, 1fr);
+				grid-template-columns: 1fr; 
 				gap: 20px;
 			}
 
-			/* Champ unique en pleine largeur (ex: bouton) */
+
 			form > button,
 			form > div:last-child {
-				grid-column: span 2;
+				grid-column: span 1;
 				justify-self: center;
 			}
+
 
 			/* Styles optionnels pour affiner les champs */
 			form label {
@@ -79,3 +79,4 @@
 			}
 		</style>
 	{% endblock %}
+	{% block footer %}{% endblock %}

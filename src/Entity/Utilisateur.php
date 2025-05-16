@@ -2,14 +2,15 @@
 
 namespace App\Entity;
 
-use Doctrine\Common\Collections\ArrayCollection;
-use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
 use App\Repository\UtilisateurRepository;
+use Doctrine\Common\Collections\Collection;
+use Doctrine\Common\Collections\ArrayCollection;
 use Symfony\Component\Security\Core\User\UserInterface;
+use Symfony\Component\Security\Core\User\PasswordAuthenticatedUserInterface;
 
 #[ORM\Entity(repositoryClass: UtilisateurRepository::class)]
-class Utilisateur implements UserInterface
+class Utilisateur implements UserInterface, PasswordAuthenticatedUserInterface
 {
     #[ORM\Id]
     #[ORM\GeneratedValue]
@@ -37,7 +38,7 @@ class Utilisateur implements UserInterface
     #[ORM\Column(length: 180, unique: true)]
     private ?string $email = null;
 
-    #[ORM\Column]
+    #[ORM\Column(type: 'json')]
     private array $roles = [];
 
     #[ORM\Column]
@@ -55,12 +56,20 @@ class Utilisateur implements UserInterface
     #[ORM\OneToMany(targetEntity: Commande::class, mappedBy: 'Utilisateur')]
     private Collection $commandes;
 
+    /**
+     * @var Collection<int, Adresse>
+     */
+    #[ORM\OneToMany(targetEntity: Adresse::class, mappedBy: 'utilisateur')]
+    private Collection $adresses;
+
     public function __construct()
     {
         $this->commandes = new ArrayCollection();
+        $this->roles = ['ROLE_USER']; // Par défaut, tous les utilisateurs sont des clients
+        $this->adresses = new ArrayCollection();
     }
 
-  
+
     public function getId(): ?int
     {
         return $this->id;
@@ -85,6 +94,25 @@ class Utilisateur implements UserInterface
     {
         $this->nom = $nom;
 
+        return $this;
+    }
+
+    public function addAdresse(Adresse $adresse): static
+    {
+        if (!$this->adresses->contains($adresse)) {
+            $this->adresses->add($adresse);
+            $adresse->setUtilisateur($this);
+        }
+        return $this;
+    }
+
+    public function removeAdresse(Adresse $adresse): static
+    {
+        if ($this->adresses->removeElement($adresse)) {
+            if ($adresse->getUtilisateur() === $this) {
+                $adresse->setUtilisateur(null);
+            }
+        }
         return $this;
     }
 
@@ -179,8 +207,11 @@ class Utilisateur implements UserInterface
     public function getRoles(): array
     {
         $roles = $this->roles;
+
         // Garantit que chaque utilisateur a au moins ROLE_USER
-        $roles[] = 'ROLE_USER';
+        if (!in_array('ROLE_USER', $roles)) {
+            $roles[] = 'ROLE_USER';
+        }
 
         return array_unique($roles);
     }
@@ -239,5 +270,51 @@ class Utilisateur implements UserInterface
         return $this;
     }
 
-    
+    // Méthodes pratiques pour gérer les rôles
+    public function isAdmin(): bool
+    {
+        return in_array('ROLE_ADMIN', $this->getRoles());
+    }
+
+    public function promoteToAdmin(): void
+    {
+        if (!$this->isAdmin()) {
+            $this->roles[] = 'ROLE_ADMIN';
+        }
+    }
+
+    public function demoteToUser(): void
+    {
+        $this->roles = ['ROLE_USER'];
+    }
+
+    /**
+     * @return Collection<int, Adresse>
+     */
+    public function getAdresses(): Collection
+    {
+        return $this->adresses;
+    }
+
+    public function addAdress(Adresse $adress): static
+    {
+        if (!$this->adresses->contains($adress)) {
+            $this->adresses->add($adress);
+            $adress->setUtilisateur($this);
+        }
+
+        return $this;
+    }
+
+    public function removeAdress(Adresse $adress): static
+    {
+        if ($this->adresses->removeElement($adress)) {
+            // set the owning side to null (unless already changed)
+            if ($adress->getUtilisateur() === $this) {
+                $adress->setUtilisateur(null);
+            }
+        }
+
+        return $this;
+    }
 }

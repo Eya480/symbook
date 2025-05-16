@@ -1,0 +1,29 @@
+<h1>Merci pour votre commande !</h1>
+<p>Bonjour
+	{{ commande.utilisateur.prenom }},</p>
+
+<p>Nous avons bien reçu votre commande n°<strong>{{ commande.reference }}</strong>.</p>
+
+<h2>Détails de votre commande :</h2>
+<ul>
+	{% for ligne in commande.ligneCommandes %}
+		<li>{{ ligne.livre.titre }}
+			-
+			{{ ligne.qte }}
+			x
+			{{ ligne.livre.prix }}DT</li>
+	{% endfor %}
+</ul>
+
+<p>
+	<strong>Total :
+		{{ commande.montantTotal }}
+		DT</strong>
+</p>
+
+<p>Adresse de livraison :<br>
+	{{ commande.adresseLivraison }}</p>
+
+<p>Vous pouvez suivre l'état de votre commande dans votre espace client.</p>
+
+<p>Cordialement,<br>L'équipe de Symbook</p>

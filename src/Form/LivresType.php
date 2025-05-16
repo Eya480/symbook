@@ -10,6 +10,7 @@ use Symfony\Component\Form\AbstractType;
 use Symfony\Component\Form\FormBuilderInterface;
 use Symfony\Bridge\Doctrine\Form\Type\EntityType;
 use Symfony\Component\Validator\Constraints\File;
+use Symfony\Component\Validator\Constraints\Isbn;
 use Symfony\Component\Validator\Constraints\Length;
 use Symfony\Component\Validator\Constraints\NotBlank;
 use Symfony\Component\OptionsResolver\OptionsResolver;
@@ -45,8 +46,13 @@ class LivresType extends AbstractType
             ->add('isbn', null, [
                 'constraints' => [
                     new NotBlank(['message' => 'L\'ISBN est obligatoire']),
-                    new IsbnConstraint(['message' => 'Veuillez entrer un ISBN valide'])
-                ]
+                    //new Isbn([
+                     //   'type' => 'isbn13',
+                     //   'message' => 'Veuillez entrer un ISBN valide (format ISBN-10 ou ISBN-13).',
+                     //   'isbn10Message' => 'L\'ISBN-10 "{{ value }}" n\'est pas valide.',
+                      //  'isbn13Message' => 'L\'ISBN-13 "{{ value }}" n\'est pas valide.',
+                    //]),
+                ],
             ])
             ->add('resume', null, [
                 'constraints' => [

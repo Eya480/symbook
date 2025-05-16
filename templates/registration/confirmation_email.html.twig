@@ -1,22 +1,14 @@
-{% extends 'base.html.twig' %}
+<h1>Merci pour votre inscription!</h1>
 
-{% block title %}
-	{{ parent() }}
-{% endblock %}
+<p>
+	Veuillez confirmer votre adresse email en cliquant sur le lien suivant:
+	<br><br>
+	<a href="{{ signedUrl }}">Confirmer mon email</a>.
+																	    Ce lien expirera dans
+	{{ expiresAt|date('g') }}
+	heure(s).
+</p>
 
-{% block body %}
-	<h1>Merci pour votre inscription!</h1>
-
-	<p>
-		Veuillez confirmer votre adresse email en cliquant sur le lien suivant:
-		<br><br>
-		<a href="{{ signedUrl }}">Confirmer mon email</a>.
-												    Ce lien expirera dans
-		{{ expiresAt|date('g') }}
-		heure(s).
-	</p>
-
-	<p>
-		À bientôt!
-	</p>
-{% endblock %}
+<p>
+	À bientôt!
+</p>

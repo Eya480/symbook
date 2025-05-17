@@ -8,6 +8,7 @@ use App\Entity\Commande;
 use App\Enum\EStatutCom;
 use Stripe\PaymentIntent;
 use App\Form\CommandeType;
+use Stripe\Checkout\Session;
 use App\Entity\LigneCommande;
 use App\Service\PanierService;
 use Symfony\Component\Mime\Email;
@@ -117,18 +118,14 @@ class CommandeController extends AbstractController
         ]);
     }
 
-
-    #[IsGranted("ROLE_USER")]
-    #[Route('/commande/confirmer', name: 'app_commande_confirmer', methods: ['POST'])]
     public function confirmer(
         Request $request,
         PanierService $panierService,
         EntityManagerInterface $em,
         MailerInterface $mailer
     ): Response {
+        // Vérifier que l'utilisateur est authentifié
         $this->denyAccessUnlessGranted('IS_AUTHENTICATED_FULLY');
-
-        // Vérifier l'utilisateur
         $user = $this->getUser();
         if (!$user) {
             error_log('CommandeController: Utilisateur non authentifié');
@@ -185,9 +182,9 @@ class CommandeController extends AbstractController
             return new JsonResponse(['error' => 'Montant total non valide'], 400);
         }
 
-        // Gestion différente selon le mode de paiement
+        // Gestion selon le mode de paiement
         if ($modePaiement === 'carte') {
-            // Paiement par carte (Stripe)
+            // Paiement par carte avec Stripe Checkout
             $stripeSecretKey = $this->getParameter('STRIPE_SECRET_KEY');
             if (empty($stripeSecretKey)) {
                 error_log('CommandeController: Clé secrète Stripe manquante');
@@ -197,34 +194,43 @@ class CommandeController extends AbstractController
             Stripe::setApiKey($stripeSecretKey);
 
             try {
-                // Création de la commande (en statut PENDING)
+                // Créer la commande en statut PENDING
                 $commande = $this->creerCommande($em, $panierService, $adresseLivraison, $total, EStatutCom::PENDING);
 
-                // Création d'un PaymentIntent
-                $paymentIntent = PaymentIntent::create([
-                    'amount' => $total * 100, // Stripe utilise des centimes
-                    'currency' => 'eur',
+                // Créer une session Stripe Checkout
+                $session = Session::create([
+                    'payment_method_types' => ['card'],
+                    'line_items' => [[
+                        'price_data' => [
+                            'currency' => 'eur',
+                            'unit_amount' => $total * 100, // Stripe utilise des centimes
+                            'product_data' => [
+                                'name' => 'Commande #' . $commande->getReference(),
+                            ],
+                        ],
+                        'quantity' => 1,
+                    ]],
+                    'mode' => 'payment',
+                    'success_url' => 'http://127.0.0.1:8000'.$this->generateUrl('app_commande_confirmation', ['id' => $commande->getId()], true),
+                    'cancel_url' => 'http://127.0.0.1:8000'.$this->generateUrl('app_commande', [], true),
                     'metadata' => [
                         'commande_id' => $commande->getId(),
                         'user_id' => $user->getUserIdentifier()
                     ]
                 ]);
 
-                // Sauvegarder l'ID du PaymentIntent dans la commande
-                $commande->setStripePaymentId($paymentIntent->id);
+                // Sauvegarder l'ID de la session Stripe dans la commande
+                $commande->setStripePaymentId($session->id);
                 $em->flush();
 
-                // Retourner une réponse JSON avec les données Stripe
-                return new JsonResponse([
-                    'clientSecret' => $paymentIntent->client_secret,
-                    'commandeId' => $commande->getId()
-                ]);
+                // Retourner l'ID de la session pour la redirection côté client
+                return new JsonResponse(['sessionId' => $session->id]);
             } catch (\Exception $e) {
-                error_log('CommandeController: Erreur Stripe ou Doctrine: ' . $e->getMessage());
+                error_log('CommandeController: Erreur Stripe: ' . $e->getMessage());
                 return new JsonResponse(['error' => 'Erreur lors du paiement: ' . $e->getMessage()], 500);
             }
         } else {
-            // Paiement à la livraison ou virement
+            // Paiement à la livraison 
             try {
                 $commande = $this->creerCommande($em, $panierService, $adresseLivraison, $total, EStatutCom::PAYMENT_PENDING);
                 $this->sendConfirmationEmail($commande, $mailer);
@@ -245,30 +251,25 @@ class CommandeController extends AbstractController
             throw $this->createAccessDeniedException();
         }
 
-        // Vérifier le statut du paiement Stripe
         if ($commande->getStripePaymentId()) {
             Stripe::setApiKey($this->getParameter('STRIPE_SECRET_KEY'));
 
             try {
-                $paymentIntent = PaymentIntent::retrieve($commande->getStripePaymentId());
+                $session = Session::retrieve($commande->getStripePaymentId());
 
-                if ($paymentIntent->status === 'succeeded') {
+                if ($session->payment_status === 'paid') {
                     $commande->setStatus(EStatutCom::PAID);
                     $em->flush();
-
                     $this->sendConfirmationEmail($commande, $mailer);
                     return $this->redirectToRoute('app_commande_confirmation', ['id' => $commande->getId()]);
                 }
             } catch (\Exception $e) {
+                error_log('CommandeController: Erreur vérification Stripe: ' . $e->getMessage());
             }
         }
 
-        // Si le paiement n'est pas confirmé, rediriger vers la page de paiement
-        return $this->render('commande/paiement.html.twig', [
-            'clientSecret' => null,
-            'stripePublicKey' => $this->getParameter('STRIPE_PUBLIC_KEY'),
-            'commande' => $commande
-        ]);
+        // Si le paiement n'est pas confirmé, rediriger vers la page de commande
+        return $this->redirectToRoute('app_commande');
     }
 
 

@@ -48,7 +48,6 @@ class CommandeController extends AbstractController
     {
         // Filtres et pagination
         $status = $request->query->get('status', 'all');
-        $page = $request->query->getInt('page', 1);
 
         // Dans votre contrôleur ou repository
         $qb = $em->getRepository(Commande::class)->createQueryBuilder('c')
@@ -67,7 +66,7 @@ class CommandeController extends AbstractController
         $pagination = $paginator->paginate(
             $qb, /* query NOT result */
             $request->query->getInt('page', 1), /* page number */
-            15 /* limit per page */
+            10 /* limit per page */
         );
 
         return $this->render('admin/index.html.twig', [

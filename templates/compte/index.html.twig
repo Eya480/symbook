@@ -132,7 +132,7 @@
 												</tr>
 											</thead>
 											<tbody>
-												{% for commande in user.commandes %}
+												{% for commande in user.commandes|slice(0,4) %}
 													<tr>
 														<td>{{ commande.reference }}</td>
 														<td>{{ commande.dateCommande|date('d/m/Y') }}</td>
@@ -153,8 +153,18 @@
 											</tbody>
 										</table>
 									</div>
+									<div class="text-end mt-3">
+										<a href="{{ path('app_mes_commandes') }}" class="btn btn-primary">
+											<i class="fas fa-list me-2"></i>Voir toutes les commandes
+										</a>
+									</div>
 								{% else %}
 									<p class="text-muted">Aucune commande passée pour le moment.</p>
+									<div class="text-end mt-3">
+										<a href="{{ path('app_mes_commandes') }}" class="btn btn-primary">
+											<i class="fas fa-list me-2"></i>Voir toutes les commandes
+										</a>
+									</div>
 								{% endif %}
 							{% else %}
 								<div class="alert alert-info">

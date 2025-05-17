@@ -6,6 +6,7 @@ namespace App\Controller;
 use App\Entity\Commande;
 use App\Enum\EStatutCom;
 use Doctrine\ORM\EntityManagerInterface;
+use Knp\Component\Pager\PaginatorInterface;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
@@ -35,17 +36,29 @@ class CompteController extends AbstractController
             'user' => $user,
         ]);
     }
+    #[IsGranted("ROLE_USER")]
     #[Route('/mon-compte/mes-commandes', name: 'app_mes_commandes')]
-    public function mesCommandes(): Response
+    public function mesCommandes(PaginatorInterface $paginator, Request $request): Response
     {
         $user = $this->getUser();
-        $commandes = $this->entityManager->getRepository(Commande::class)->findBy(
-            ['utilisateur' => $user],
-            ['dateCommande' => 'DESC']
+        if (!$user) {
+            throw $this->createAccessDeniedException('Vous devez être connecté pour voir vos commandes.');
+        }
+
+        $queryBuilder = $this->entityManager->getRepository(Commande::class)
+            ->createQueryBuilder('c')
+            ->where('c.Utilisateur = :user')
+            ->setParameter('user', $user)
+            ->orderBy('c.dateCommande', 'DESC');
+
+        $pagination = $paginator->paginate(
+            $queryBuilder,
+            $request->query->getInt('page', 1),
+            5
         );
 
         return $this->render('compte/mes_commandes.html.twig', [
-            'commandes' => $commandes
+            'commandes' => $pagination,
         ]);
     }
 

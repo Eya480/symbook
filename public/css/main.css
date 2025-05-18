@@ -1,0 +1,75 @@
+
+/* Titre */
+h2 {
+    color: #264653;
+    margin-bottom: 0.5rem;
+}
+
+p.text-muted {
+    font-size: 1rem;
+}
+
+/* Bouton Ajouter */
+a.btn {
+    background: linear-gradient(135deg, #26726d, #1b4b47);
+    transition: all 0.3s ease-in-out;
+    color: white;
+}
+
+a.btn:hover {
+    background: linear-gradient(135deg, #1b4b47, #26726d);
+    transform: scale(1.05);
+}
+
+/* Card Category */
+.card {
+    border-color: rgba(0, 0, 0, 0.589);
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15);
+}
+
+/* Titre Catégorie */
+.card-title {
+    font-size: 1.3rem;
+    color: #20616c;
+    border-bottom: 2px solid #26726d;
+    padding-bottom: 10px;
+}
+
+/* Badge Catégorie */
+.badge.bg-primary {
+    background-color: #26726d !important;
+    font-size: 0.85rem;
+}
+
+/* Responsive cards */
+@media(max-width: 768px) {
+    .col-md-4 {
+        width: 50%;
+    }
+}
+/* Adaptation pour la nouvelle disposition */
+@media (max-width: 768px) {
+    .d-flex.align-items-center.gap-3 {
+      width: 100%;
+      margin-top: 1rem;
+    }
+    form.position-relative {
+      width: 100%;
+    }
+  }
+/* Search Bar */
+.input-group-text {
+    border-radius: 25px 0 0 25px !important;
+    border-right: none !important;
+  }
+  
+  input[type="search"] {
+    border-radius: 0 25px 25px 0 !important;
+    border-left: none !important;
+    padding-left: 10px !important;
+  }

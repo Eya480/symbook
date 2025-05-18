@@ -1,0 +1,205 @@
+{# templates/dashboard/index.html.twig #}
+{% extends 'base.html.twig' %}
+
+{% block title %}Tableau de Bord des Ventes{% endblock %}
+
+{% block stylesheets %}
+    {{ parent() }}
+    <style>
+        .chart-container {
+            padding: 20px;
+            margin-bottom: 30px;
+            border-radius: 5px;
+            background-color: #ffffff;
+            box-shadow: 0 0 10px rgba(0,0,0,0.05);
+            height: 100%;
+        }
+        .chart-title {
+            font-size: 18px;
+            margin-bottom: 15px;
+            font-weight: bold;
+            color: #2c3e50;
+        }
+        .book-item {
+            display: flex;
+            align-items: center;
+            margin-bottom: 15px;
+            padding: 15px;
+            border-radius: 5px;
+            background-color: #f8f9fa;
+        }
+        .book-image {
+            width: 50px;
+            height: 70px;
+            object-fit: cover;
+            margin-right: 15px;
+            border-radius: 3px;
+        }
+        .book-details {
+            flex-grow: 1;
+        }
+        .book-title {
+            font-weight: bold;
+            margin-bottom: 5px;
+            color: #2c3e50;
+        }
+        .book-sales {
+            color: #7f8c8d;
+            font-size: 14px;
+        }
+        .filter-card {
+            background-color: white;
+            border-radius: 5px;
+            box-shadow: 0 0 10px rgba(0,0,0,0.05);
+            padding: 20px;
+            margin-bottom: 30px;
+        }
+        .full-height-col {
+            height: calc(100vh - 250px);
+            min-height: 500px;
+        }
+    </style>
+{% endblock %}
+
+{% block body %}
+    <div class="container-fluid mt-4">
+        <h1 class="mb-4">Tableau de Bord des Ventes</h1>
+
+        <!-- Filtres -->
+        <div class="filter-card mb-4">
+            <form method="get" class="row g-3 align-items-end">
+                <div class="col-md-4">
+                    <label for="dateDebut" class="form-label">Date de début</label>
+                    <input type="date" class="form-control" id="dateDebut" name="dateDebut" value="{{ dateDebut }}">
+                </div>
+                <div class="col-md-4">
+                    <label for="dateFin" class="form-label">Date de fin</label>
+                    <input type="date" class="form-control" id="dateFin" name="dateFin" value="{{ dateFin }}">
+                </div>
+                <div class="col-md-4">
+                    <button type="submit" class="btn btn-primary w-100">Filtrer</button>
+                </div>
+            </form>
+        </div>
+
+        <div class="row">
+            <!-- Livre le Plus Vendu - Pleine largeur -->
+            <div class="col-md-12 mb-4 full-height-col">
+                <div class="chart-container h-100">
+                    <div class="chart-title">Livres les Plus Vendus</div>
+                    <div id="bestSellingBookChart" style="height: calc(100% - 50px);"></div>
+                </div>
+            </div>
+
+            <!-- Nombre de Commandes par période - Pleine largeur -->
+            <div class="col-md-12 full-height-col">
+                <div class="chart-container h-100">
+                    <div class="chart-title">Nombre de Commandes par Période</div>
+                    <div id="ordersByPeriodChart" style="height: calc(100% - 50px);"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+{% endblock %}
+
+{% block javascripts %}
+    {{ parent() }}
+    <!-- Chargement de Google Charts -->
+    <script type="text/javascript" src="https://www.gstatic.com/charts/loader.js"></script>
+    <script type="text/javascript">
+        // Charger les librairies Google Charts
+        google.charts.load('current', {'packages':['corechart', 'bar']});
+        google.charts.setOnLoadCallback(drawCharts);
+
+        function drawCharts() {
+            try {
+                // Récupérer les données du contrôleur
+                var bestSellingBook = {{ bestSellingBook|raw }};
+                var ordersByPeriod = {{ ordersByPeriod|raw }};
+
+                // Dessiner le graphique des livres les plus vendus
+                drawBestSellingBookChart(bestSellingBook);
+
+                // Dessiner le graphique des commandes par période
+                drawOrdersByPeriodChart(ordersByPeriod);
+            } catch (error) {
+                console.error("Erreur lors du chargement des graphiques:", error);
+            }
+        }
+
+        function drawBestSellingBookChart(chartData) {
+            var data = google.visualization.arrayToDataTable(chartData);
+
+            var options = {
+                title: '',
+                hAxis: {
+                    title: 'Exemplaires vendus',
+                    minValue: 0,
+                    textStyle: { color: '#555' },
+                    titleTextStyle: { color: '#555' }
+                },
+                vAxis: {
+                    title: 'Livres',
+                    textStyle: { color: '#555' },
+                    titleTextStyle: { color: '#555' }
+                },
+                legend: { position: 'none' },
+                colors: ['#4285F4'],
+                backgroundColor: 'transparent',
+                chartArea: {
+                    backgroundColor: 'transparent',
+                    width: '80%',
+                    height: '80%'
+                },
+                bar: { groupWidth: '75%' }
+            };
+
+            var chart = new google.visualization.BarChart(document.getElementById('bestSellingBookChart'));
+            chart.draw(data, options);
+
+            // Redimensionnement responsive
+            window.addEventListener('resize', function() {
+                chart.draw(data, options);
+            });
+        }
+
+        function drawOrdersByPeriodChart(chartData) {
+            var data = google.visualization.arrayToDataTable(chartData);
+
+            var options = {
+                title: '',
+                hAxis: {
+                    title: 'Dates',
+                    textStyle: { color: '#555' },
+                    titleTextStyle: { color: '#555' },
+                    slantedText: true,
+                    slantedTextAngle: 45
+                },
+                vAxis: {
+                    title: 'Nombre de commandes',
+                    minValue: 0,
+                    textStyle: { color: '#555' },
+                    titleTextStyle: { color: '#555' }
+                },
+                legend: { position: 'none' },
+                colors: ['#34A853'],
+                backgroundColor: 'transparent',
+                chartArea: {
+                    backgroundColor: 'transparent',
+                    width: '80%',
+                    height: '80%'
+                },
+                pointSize: 5,
+                lineWidth: 2
+            };
+
+            var chart = new google.visualization.LineChart(document.getElementById('ordersByPeriodChart'));
+            chart.draw(data, options);
+
+            // Redimensionnement responsive
+            window.addEventListener('resize', function() {
+                chart.draw(data, options);
+            });
+        }
+    </script>
+{% endblock %}

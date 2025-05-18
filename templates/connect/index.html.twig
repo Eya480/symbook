@@ -1,0 +1,28 @@
+{% extends 'home/home.html.twig' %}
+
+{% block title %}Connexion{% endblock %}
+
+{% block body %}
+    <div class="container mt-5" style="padding-top: 100px;"> {# <-- adapte cette valeur selon la hauteur de ta navbar #}
+        <div class="row justify-content-center">
+            <div class="col-md-6 text-center">
+                <h1 class="mb-4">Connexion</h1>
+
+                {% if app.user %}
+                    <div class="alert alert-success">
+                        Vous êtes déjà connecté en tant que <strong>{{ app.user.email }}</strong>.
+                        <a href="{{ path('app_dashboard') }}" class="btn btn-primary mt-2">Aller au tableau de bord</a>
+                    </div>
+                {% else %}
+                    <p>Choisissez une méthode de connexion :</p>
+
+                    <a href="{{ path('auth_oauth_connect', { service: 'google' }) }}" class="btn btn-danger btn-lg btn-block mb-3">
+                        <i class="fab fa-google me-2"></i> Se connecter avec Google
+                    </a>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" integrity="sha512-..." crossorigin="anonymous" referrerpolicy="no-referrer" />
+{% endblock %}

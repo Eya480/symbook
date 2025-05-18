@@ -1,0 +1,93 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Paiement | Symbook{% endblock %}
+
+{% block stylesheets %}
+    {{ parent() }}
+    <script src="https://js.stripe.com/v3/"></script>
+{% endblock %}
+
+{% block body %}
+<div class="container mt-5">
+    <div class="row">
+        <div class="col-md-6 offset-md-3">
+            <div class="card glass-card">
+                <div class="card-header">
+                    <h4>Paiement de votre commande #{{ commande.reference }}</h4>
+                </div>
+                <div class="card-body">
+                    <p class="text-center">Montant total: {{ commande.montantTotal }} DT</p>
+                    
+                    {% if clientSecret %}
+                        <form id="payment-form">
+                            <div id="payment-element">
+                                <!-- Stripe injectera le formulaire de paiement ici -->
+                            </div>
+                            <button id="submit" class="btn btn-primary btn-block mt-3">
+                                <span id="button-text">Payer maintenant</span>
+                                <span id="spinner" class="spinner-border spinner-border-sm d-none"></span>
+                            </button>
+                            <div id="payment-message" class="mt-3 text-danger"></div>
+                        </form>
+                    {% else %}
+                        <div class="alert alert-warning">
+                            <p>Une erreur est survenue lors de la préparation du paiement.</p>
+                            <a href="{{ path('app_commande_verifier_paiement', {'id': commande.id}) }}" class="btn btn-primary">
+                                Vérifier à nouveau le statut du paiement
+                            </a>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% if clientSecret %}
+<script>
+    const stripe = Stripe('{{ stripePublicKey }}');
+    const elements = stripe.elements();
+    const paymentElement = elements.create('payment');
+    paymentElement.mount('#payment-element');
+
+    const form = document.getElementById('payment-form');
+    const spinner = document.getElementById('spinner');
+    const buttonText = document.getElementById('button-text');
+    const paymentMessage = document.getElementById('payment-message');
+
+    form.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        
+        spinner.classList.remove('d-none');
+        buttonText.textContent = 'Paiement en cours...';
+        form.querySelector('button').disabled = true;
+
+        const { error } = await stripe.confirmPayment({
+            elements,
+            confirmParams: {
+                return_url: '{{ url('app_commande_verifier_paiement', {'id': commande.id}) }}',
+            },
+        });
+
+        if (error) {
+            paymentMessage.textContent = error.message;
+            spinner.classList.add('d-none');
+            buttonText.textContent = 'Payer maintenant';
+            form.querySelector('button').disabled = false;
+        }
+    });
+
+    // Vérifier le statut du paiement au chargement de la page
+    document.addEventListener('DOMContentLoaded', function() {
+        const urlParams = new URLSearchParams(window.location.search);
+        const paymentStatus = urlParams.get('payment_status');
+        
+        if (paymentStatus === 'success') {
+            window.location.href = '{{ path('app_commande_confirmation', {'id': commande.id}) }}';
+        } else if (paymentStatus === 'failed') {
+            paymentMessage.textContent = 'Le paiement a échoué. Veuillez réessayer.';
+        }
+    });
+</script>
+{% endif %}
+{% endblock %}

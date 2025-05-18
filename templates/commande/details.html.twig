@@ -1,0 +1,289 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Confirmation de commande | Symbook
+{% endblock %}
+
+{% block stylesheets %}
+	<link rel="stylesheet" href="{{ asset('css/homeStyle.css') }}">
+{% endblock %}
+
+{% block nav %}
+	<!-- Effets de particules -->
+	<div class="particles" id="particles"></div>
+
+	<!-- Header -->
+	<header class="glass-card">
+		<nav class="navbar">
+			<a href="#" class="logo">Symbook</a>
+
+			<div class="nav-links">
+				<a href="{{ path('home') }}">
+					<i class="fas fa-home me-1"></i>Accueil</a>
+				<a href="{{ path('home_livre') }}">
+					<i class="fas fa-book me-1"></i>Livres</a>
+				<a href="#">
+					<i class="fas fa-envelope me-1"></i>Contact</a>
+			</div>
+
+			<div class="nav-actions">
+				{% if app.user %}
+					{# Affichage pour utilisateur connecté #}
+					<div class="nav-links">
+						<a href="{{path('app_compte')}}">
+							<i class="fas fa-user me-1"></i>Mon compte</a>
+					</div>
+					<div class="nav-links">
+						<a href="{{ path('app_logout') }}">
+							<i class="fas fa-sign-out-alt me-1"></i>Déconnexion</a>
+					</div>
+				{% else %}
+					{# Affichage pour visiteur non connecté #}
+					<div class="nav-links search-icon">
+						<a href="{{ path('app_register') }}">
+							<i class="fas fa-user-plus me-1"></i>Inscription</a>
+					</div>
+					<div class="nav-links">
+						<a href="{{ path('app_login') }}">
+							<i class="fas fa-sign-in-alt me-1"></i>Connexion</a>
+					</div>
+				{% endif %}
+
+				<div class="search-icon">
+					<i class="fas fa-search"></i>
+				</div>
+				<a href="{{ path('app_panier') }}" class="position-relative text-decoration-none">
+					<i class="fas fa-shopping-bag fs-4 text-white"></i>
+					{% set panier = app.session.get('panier')|default([]) %}
+					<span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger" id="cart-counter" style="display: {{ panier|length > 0 ? 'flex' : 'none' }}">
+						{{ panier|reduce((total, qty) => total + qty, 0) }}
+					</span>
+				</a>
+			</div>
+			<div class="hamburger">
+				<i class="fas fa-bars"></i>
+			</div>
+		</nav>
+	</header>
+{% endblock %}
+
+{% block body %}
+	<div class="main-container commande-details" style="margin-top: 100px;">
+		<div class="page-header">
+			{% block flashes %}
+				{% for type, messages in app.flashes %}
+					{% for message in messages %}
+						<div class="alert alert-{{ type }}">{{ message }}</div>
+					{% endfor %}
+				{% endfor %}
+			{% endblock %}
+			<h2 class="page-title">
+				<i class="fas fa-receipt me-2"></i>Détails de la commande #{{ commande.reference }}
+			</h2>
+
+		</div>
+
+		<div class="glass-card p-4 mb-4">
+			<div class="row">
+				<div class="col-md-6">
+					<h4>
+						<i class="fas fa-truck me-2"></i>Livraison</h4>
+					<p>{{ commande.adresseLivraison }}</p>
+					<p>{{ commande.utilisateur.ville.nomVille }}
+						-
+						{{ commande.utilisateur.codePostal }}</p>
+				</div>
+				<div class="col-md-6">
+					<h4>
+						<i class="fas fa-info-circle me-2"></i>Statut :
+						<span class="badge bg-{{ commande.status.getLabel() == 'Livrée' ? 'success' : 'warning' }} me-2">
+							{{ commande.status.getLabel() }}
+						</span>
+					</h4>
+					<div class="d-flex align-items-center">
+
+						{% if commande.status == 'Expédiée' %}
+							<small class="text-muted">Livraison prévue sous 2-3 jours</small>
+						{% endif %}<br>
+
+					</div>
+					<p class="page-subtitle">Passée le
+						{{ commande.dateCommande|date('d/m/Y à H:i') }}</p>
+				</div>
+			</div>
+		</div>
+
+		<div class="glass-card p-4">
+			<h3 class="mb-4">
+				<i class="fas fa-book me-2"></i>Articles commandés</h3>
+
+			<div class="table-responsive">
+				<table class="table">
+					<thead>
+						<tr>
+							<th>Livre</th>
+							<th>Prix unitaire</th>
+							<th>Quantité</th>
+							<th>Sous-total</th>
+						</tr>
+					</thead>
+					<tbody>
+						{% for ligne in commande.ligneCommandes %}
+							<tr>
+								<td>
+									<div class="d-flex align-items-center">
+										<img src="{{ asset('uploads/images/' ~ ligne.livre.image) }}" alt="{{ ligne.livre.titre }}" class="img-thumbnail me-3" style="width: 60px;">
+										<div>
+											<strong>{{ ligne.livre.titre }}</strong><br>
+											<small class="text-muted">{{ ligne.livre.editeur }}</small>
+										</div>
+									</div>
+								</td>
+								<td>{{ ligne.livre.prix }}
+									DT</td>
+								<td>{{ ligne.qte }}
+									livres</td>
+								<td>{{ ligne.livre.prix * ligne.qte }}
+									DT</td>
+							</tr>
+						{% endfor %}
+					</tbody>
+					<tfoot>
+						<tr>
+							<td colspan="3" class="text-end">
+								<strong>Total :</strong>
+							</td>
+							<td>
+								<strong>{{ commande.montantTotal }}
+									DT</strong>
+							</td>
+						</tr>
+					</tfoot>
+				</table>
+
+			</div>
+
+			<div class="d-flex justify-content-between mt-4">
+				<a href="{{ path('app_compte') }}" class="btn btn-secondary">
+					<i class="fas fa-arrow-left me-2"></i>Retour à mon compte
+				</a>
+				<button class="btn btn-primary print-button" onclick="handlePrint()">
+					<i class="fas fa-print me-2"></i>Imprimer
+				</button>
+				{% if commande.status.getLabel() == 'Livrée' %}
+					<a href="#" class="btn btn-outline-danger mt-3">
+						<i class="fas fa-exclamation-circle me-2"></i>Signaler un problème
+					</a>
+				{% endif %}
+			</div>
+		</div>
+	</div>
+{% endblock %}
+
+{% block javascripts %}
+	{{ parent() }}
+	<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js" integrity="sha384-geWF76RCwLtnZ8qwWowPQNguL3RmwHVBC9FhGdlKrxdiJJigb/j/68SIy3Te4Bkz" crossorigin="anonymous"></script>
+	<style media="print">
+		@page {
+			size: auto;
+			margin: 5mm;
+		}
+		body * {
+			visibility: hidden;
+		}
+		.print-section,
+		.print-section * {
+			visibility: visible;
+		}
+		.print-section {
+			position: absolute;
+			left: 0;
+			top: 0;
+			width: 100%;
+		}
+		.no-print {
+			display: none !important;
+		}
+	</style>
+	<style>
+		/* assets/styles/print.css */
+		@media print {
+			body {
+				background: white;
+				font-size: 12pt;
+			}
+
+			.print-button,
+			.navbar,
+			footer {
+				display: none !important;
+			}
+
+			.commande-details {
+				width: 100%;
+				border: none;
+				box-shadow: none;
+			}
+
+			a::after {
+				content: " (" attr(href) ")";
+				font-size: 0.8em;
+				font-weight: normal;
+			}
+		}
+		.img-thumbnail {
+			border-radius: 5px;
+			border: 1px solid rgba(0, 0, 0, 0.1);
+		}
+
+		.table {
+			background-color: rgba(255, 255, 255, 0.05);
+			border-radius: 10px;
+			overflow: hidden;
+		}
+
+		.table thead th {
+			background-color: rgba(0, 123, 255, 0.1);
+			border-bottom: none;
+			color: white;
+		}
+
+		.table tbody tr:hover {
+			background-color: rgba(0, 123, 255, 0.05);
+		}
+	</style>
+	<script>
+		function handlePrint() { // Créez une section spécifique pour l'impression
+const printContent = document.createElement('div');
+printContent.className = 'print-section';
+
+// Clonez le contenu à imprimer
+const contentToPrint = document.querySelector('.commande-details').cloneNode(true);
+
+// Supprimez les éléments non nécessaires
+const noPrintElements = contentToPrint.querySelectorAll('.no-print');
+noPrintElements.forEach(el => el.remove());
+
+printContent.appendChild(contentToPrint);
+
+// Ajoutez au corps et imprimez
+document.body.appendChild(printContent);
+window.print();
+
+// Nettoyage après impression
+setTimeout(() => {
+document.body.removeChild(printContent);
+}, 1000);
+}
+
+// Alternative avec impression conditionnelle
+document.addEventListener('DOMContentLoaded', () => {
+document.querySelector('.print-button').addEventListener('click', (e) => {
+e.preventDefault();
+const originalTitle = document.title;
+document.title = "Commande_" + new Date().toLocaleDateString();
+window.print();
+document.title = originalTitle;
+});
+});
+	</script>
+{% endblock %}

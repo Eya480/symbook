@@ -1,0 +1,380 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Commande | Symbook
+{% endblock %}
+
+{% block stylesheets %}
+	<link rel="stylesheet" href="{{ asset('css/homeStyle.css') }}">
+{% endblock %}
+
+{% block nav %}
+	<!-- Effets de particules -->
+	<div class="particles" id="particles"></div>
+
+	<!-- Header -->
+	<header class="glass-card">
+		<nav class="navbar">
+			<a href="#" class="logo">Symbook</a>
+
+			<div class="nav-links">
+				<a href="{{ path('home') }}">
+					<i class="fas fa-home me-1"></i>Accueil</a>
+				<a href="{{ path('home_livre') }}">
+					<i class="fas fa-book me-1"></i>Livres</a>
+				<a href="#">
+					<i class="fas fa-envelope me-1"></i>Contact</a>
+			</div>
+
+			<div class="nav-actions">
+				{% if app.user %}
+					<div class="nav-links">
+						<a href="{{ path('app_compte') }}">
+							<i class="fas fa-user me-1"></i>Mon compte</a>
+					</div>
+					<div class="nav-links">
+						<a href="{{ path('app_logout') }}">
+							<i class="fas fa-sign-out-alt me-1"></i>Déconnexion</a>
+					</div>
+				{% else %}
+					<div class="nav-links search-icon">
+						<a href="{{ path('app_register') }}">
+							<i class="fas fa-user-plus me-1"></i>Inscription</a>
+					</div>
+					<div class="nav-links">
+						<a href="{{ path('app_login') }}">
+							<i class="fas fa-sign-in-alt me-1"></i>Connexion</a>
+					</div>
+				{% endif %}
+
+				<div class="search-icon">
+					<i class="fas fa-search"></i>
+				</div>
+				<a href="{{ path('app_panier') }}" class="position-relative text-decoration-none">
+					<i class="fas fa-shopping-bag fs-4 text-white"></i>
+					{% set panier = app.session.get('panier')|default([]) %}
+					<span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger" id="cart-counter" style="display: {{ panier|length > 0 ? 'flex' : 'none' }}">
+						{{ panier|reduce((total, qty) => total + qty, 0) }}
+					</span>
+				</a>
+			</div>
+			<div class="hamburger">
+				<i class="fas fa-bars"></i>
+			</div>
+		</nav>
+	</header>
+{% endblock %}
+
+{% block body %}
+	<div class="main-container" style="margin-top: 100px;">
+		<div class="page-header">
+			<h1 class="page-title">Finalisation de votre commande</h1>
+			<p class="page-subtitle">Vérifiez vos informations avant de valider</p>
+		</div>
+
+		<div
+			class="row">
+			<!-- Étape 1: Livraison -->
+			<div class="col-md-6">
+				<div class="glass-card p-4 mb-4">
+					<h3>
+						<i class="fas fa-truck me-2"></i>
+						Adresse de livraison
+					</h3>
+
+					{% if app.user.adresses|length > 0 %}
+						<form id="livraisonForm">
+							{% for adresse in app.user.adresses %}
+								<div class="form-check mb-3">
+									<input class="form-check-input" type="radio" name="adresseLivraison" id="adresse{{ loop.index }}" value="{{ adresse.id }}" {{ loop.first ? 'checked' : '' }}>
+									<label class="form-check-label" for="adresse{{ loop.index }}">
+										<strong>{{ adresse.nom }}</strong><br>
+										{{ adresse.rue }},
+										{{ adresse.codePostal }}
+										{{ adresse.ville }}<br>
+										{{ adresse.pays }}
+									</label>
+								</div>
+							{% endfor %}
+
+							<button type="button" class="btn btn-outline-primary mt-2" data-bs-toggle="modal" data-bs-target="#newAddressModal">
+								<i class="fas fa-plus me-1"></i>
+								Ajouter une nouvelle adresse
+							</button>
+						</form>
+					{% else %}
+						<div class="alert alert-warning">
+							<p>Aucune adresse enregistrée. Veuillez en ajouter une pour continuer.</p>
+							<button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#newAddressModal">
+								<i class="fas fa-plus me-1"></i>
+								Ajouter une adresse
+							</button>
+						</div>
+					{% endif %}
+				</div>
+			</div>
+
+			<!-- Étape 2: Paiement -->
+			<div class="col-md-6">
+				<div class="glass-card p-4 mb-4">
+					<h3>
+						<i class="fas fa-credit-card me-2"></i>
+						Mode de paiement
+					</h3>
+					<form id="paiementForm">
+						<div class="form-check mb-3">
+							<input class="form-check-input" type="radio" name="modePaiement" id="paiementLivraison" value="livraison" checked>
+							<label class="form-check-label" for="paiementLivraison">
+								Paiement à la livraison
+							</label>
+						</div>
+						<div class="form-check mb-3">
+							<input class="form-check-input" type="radio" name="modePaiement" id="paiementCarte" value="carte">
+							<label class="form-check-label" for="paiementCarte">
+								Carte bancaire
+							</label>
+						</div>
+					</form>
+				</div>
+			</div>
+
+			<!-- Récapitulatif de la commande -->
+			<div class="glass-card p-4 mb-4">
+				<h3>
+					<i class="fas fa-list-alt me-2"></i>
+					Récapitulatif de votre commande
+				</h3>
+
+				<div class="table-responsive">
+					<table class="table">
+						<thead>
+							<tr>
+								<th>Livre</th>
+								<th>Prix unitaire</th>
+								<th>Quantité</th>
+								<th>Total</th>
+							</tr>
+						</thead>
+						<tbody>
+							{% for item in items %}
+								<tr>
+									<td>
+										<div class="d-flex align-items-center">
+											<img src="{{ asset('Uploads/images/' ~ item.livre.image) }}" alt="{{ item.livre.titre }}" class="img-thumbnail me-3" width="60">
+											<div>
+												<strong>{{ item.livre.titre }}</strong><br>
+												<small>{{ item.livre.editeur }}</small>
+											</div>
+										</div>
+									</td>
+									<td>{{ item.livre.prix }}
+										DT</td>
+									<td>{{ item.quantite }}</td>
+									<td>{{ item.livre.prix * item.quantite }}
+										DT</td>
+								</tr>
+							{% endfor %}
+						</tbody>
+						<tfoot>
+							<tr>
+								<td colspan="3" class="text-end">
+									<strong>Sous-total :</strong>
+								</td>
+								<td>{{ total }}
+									DT</td>
+							</tr>
+							<tr>
+								<td colspan="3" class="text-end">
+									<strong>Livraison :</strong>
+								</td>
+								<td>
+									{% if total >= 300%}
+										Gratuite
+									{% else %}
+										8 DT
+									{% endif %}
+								</td>
+							</tr>
+							<tr>
+								<td colspan="3" class="text-end">
+									<strong>Total :</strong>
+								</td>
+								<td>
+									{% if total >= 300 %}
+										{{ total }}
+										DT
+									{% else %}
+										{{ total + 8 }}
+										DT
+									{% endif %}
+								</td>
+							</tr>
+						</tfoot>
+					</table>
+					{% if modePaiement is defined and total < 300 %}
+						<div class="alert alert-info mt-3">
+							<i class="fas fa-info-circle me-2"></i>
+							Frais de livraison: 8 DT (gratuits à partir de 300 DT d'achat)
+						</div>
+					{% endif %}
+					{% if modePaiement is defined and total > 300 %}
+						<div class="alert alert-info mt-3">
+							<i class="fas fa-info-circle me-2"></i>
+							Frais de livraison: 0 DT
+						</div>
+					{% endif %}
+				</div>
+
+				<div class="d-flex justify-content-between mt-4">
+					<a href="{{ path('app_panier') }}" class="btn btn-secondary">
+						<i class="fas fa-arrow-left me-1"></i>
+						Retour au panier
+					</a>
+					<button type="button" class="btn btn-primary" id="confirmerCommande">
+						<i class="fas fa-check me-1"></i>
+						Confirmer la commande
+					</button>
+				</div>
+			</div>
+		</div>
+
+		<!-- Modal pour nouvelle adresse -->
+		<div class="modal fade" id="newAddressModal" tabindex="-1" aria-hidden="true">
+			<div class="modal-dialog">
+				<div class="modal-content glass-card">
+					<div class="modal-header">
+						<h5 class="modal-title">Nouvelle adresse</h5>
+						<button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+					</div>
+					<div class="modal-body">
+						<form id="newAddressForm">
+							<div class="mb-3">
+								<label for="nomAdresse" class="form-label">Nom de l'adresse (ex: Maison, Bureau)</label>
+								<input type="text" class="form-control" id="nomAdresse" required>
+							</div>
+							<div class="mb-3">
+								<label for="rue" class="form-label">Adresse</label>
+								<input type="text" class="form-control" id="rue" required>
+							</div>
+							<div class="row">
+								<div class="col-md-6 mb-3">
+									<label for="codePostal" class="form-label">Code postal</label>
+									<input type="text" class="form-control" id="codePostal" required>
+								</div>
+								<div class="col-md-6 mb-3">
+									<label for="ville" class="form-label">Ville</label>
+									<input type="text" class="form-control" id="ville" required>
+								</div>
+							</div>
+							<div class="mb-3">
+								<label for="pays" class="form-label">Pays</label>
+								<input type="text" class="form-control" id="pays" value="Tunisie" required>
+							</div>
+						</form>
+					</div>
+					<div class="modal-footer">
+						<button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annuler</button>
+						<button type="button" class="btn btn-primary" id="saveAddressBtn">Enregistrer</button>
+					</div>
+				</div>
+			</div>
+		</div>
+	{% endblock %}
+	{% block javascripts %}
+		{{ parent() }}
+		<script src="https://js.stripe.com/v3/"></script>
+		<script>
+			document.addEventListener('DOMContentLoaded', function () {
+const stripe = Stripe('{{ stripePublicKey }}');
+
+// Supprimer la gestion de cardElement car Stripe Checkout est utilisé
+// Gestion de l'ajout d'une nouvelle adresse (inchangé)
+document.getElementById('saveAddressBtn').addEventListener('click', async function () {
+const formData = {
+nom: document.getElementById('nomAdresse').value,
+rue: document.getElementById('rue').value,
+codePostal: document.getElementById('codePostal').value,
+ville: document.getElementById('ville').value,
+pays: document.getElementById('pays').value
+};
+
+if (! formData.nom || ! formData.rue || ! formData.codePostal || ! formData.ville || ! formData.pays) {
+alert('Veuillez remplir tous les champs');
+return;
+}
+
+try {
+const response = await fetch('{{ path("app_ajouter_adresse") }}', {
+method: 'POST',
+headers: {
+'Content-Type': 'application/json',
+'X-Requested-With': 'XMLHttpRequest'
+},
+body: JSON.stringify(formData)
+});
+
+const data = await response.json();
+
+if (! response.ok || ! data.success) {
+throw new Error(data.message || 'Erreur lors de l\'ajout de l\'adresse');
+}
+
+const container = document.getElementById('livraisonForm') || document.querySelector('.glass-card.p-4.mb-4');
+container.insertAdjacentHTML('afterbegin', data.html);
+
+const modal = bootstrap.Modal.getInstance(document.getElementById('newAddressModal'));
+if (modal) {
+modal.hide();
+}
+
+document.getElementById('newAddressForm').reset();
+} catch (error) {
+console.error('Erreur:', error);
+alert(error.message || 'Une erreur est survenue lors de l\'ajout de l\'adresse');
+}
+});
+
+// Confirmation de la commande
+document.getElementById('confirmerCommande').addEventListener('click', async function () {
+const adresseLivraison = document.querySelector('input[name="adresseLivraison"]:checked') ?. value;
+const modePaiement = document.querySelector('input[name="modePaiement"]:checked').value;
+
+if (! adresseLivraison) {
+alert('Veuillez sélectionner une adresse de livraison');
+return;
+}
+
+const formData = new FormData();
+formData.append('adresseLivraison', adresseLivraison);
+formData.append('modePaiement', modePaiement);
+
+try {
+const response = await fetch('{{ path("app_commande_confirmer") }}', {
+method: 'POST',
+body: formData
+});
+
+const data = await response.json();
+
+if (response.ok) {
+if (data.redirect) { // Redirection pour les paiements non-Stripe
+window.location.href = data.redirect;
+} else if (data.sessionId) { // Redirection vers Stripe Checkout pour le paiement par carte
+const {error} = await stripe.redirectToCheckout({sessionId: data.sessionId});
+if (error) {
+alert(error.message);
+}
+} else {
+alert('Réponse inattendue du serveur');
+}
+} else {
+console.error('Erreur serveur:', data.error);
+alert(data.error || 'Erreur lors de la confirmation de la commande');
+}
+} catch (error) {
+console.error('Erreur réseau:', error);
+alert('Une erreur est survenue: ' + error.message);
+}
+});
+});
+		</script>
+	{% endblock %}

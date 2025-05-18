@@ -1,0 +1,429 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Votre Panier | Symbook
+{% endblock %}
+
+{% block stylesheets %}
+	<link rel="stylesheet" href="{{ asset('css/homeStyle.css') }}">
+{% endblock %}
+
+{% block nav %}
+	<!-- Effets de particules -->
+	<div class="particles" id="particles"></div>
+
+	<!-- Header -->
+	<header class="glass-card">
+		<nav class="navbar">
+			<a href="#" class="logo">Symbook</a>
+
+			<div class="nav-links">
+				<a href="{{ path('home') }}">
+					<i class="fas fa-home me-1"></i>Accueil</a>
+				<a href="{{ path('home_livre') }}">
+					<i class="fas fa-book me-1"></i>Livres</a>
+				<a href="#">
+					<i class="fas fa-envelope me-1"></i>Contact</a>
+			</div>
+
+			<div class="nav-actions">
+				{% if app.user %}
+					{# Affichage pour utilisateur connecté #}
+					<div class="nav-links">
+						<a href="{{path('app_compte')}}">
+							<i class="fas fa-user me-1"></i>Mon compte</a>
+					</div>
+					<div class="nav-links">
+						<a href="{{ path('app_logout') }}">
+							<i class="fas fa-sign-out-alt me-1"></i>Déconnexion</a>
+					</div>
+				{% else %}
+					{# Affichage pour visiteur non connecté #}
+					<div class="nav-links search-icon">
+						<a href="{{ path('app_register') }}">
+							<i class="fas fa-user-plus me-1"></i>Inscription</a>
+					</div>
+					<div class="nav-links">
+						<a href="{{ path('app_login') }}">
+							<i class="fas fa-sign-in-alt me-1"></i>Connexion</a>
+					</div>
+				{% endif %}
+
+				<div class="search-icon">
+					<i class="fas fa-search"></i>
+				</div>
+				<a href="{{ path('app_panier') }}" class="position-relative text-decoration-none">
+					<i class="fas fa-shopping-bag fs-4 text-white"></i>
+					{% set panier = app.session.get('panier')|default([]) %}
+					<span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger" id="cart-counter" style="display: {{ panier|length > 0 ? 'flex' : 'none' }}">
+						{{ panier|reduce((total, qty) => total + qty, 0) }}
+					</span>
+				</a>
+			</div>
+			<div class="hamburger">
+				<i class="fas fa-bars"></i>
+			</div>
+		</nav>
+	</header>
+{% endblock %}
+
+{% block body %}
+	{# Modal de confirmation de suppression #}
+	<div class="modal fade" id="deleteConfirmModal" tabindex="-1" aria-labelledby="deleteConfirmModalLabel" aria-hidden="true">
+		<div class="modal-dialog modal-dialog-centered">
+			<div class="modal-content glass-card">
+				<div class="modal-header">
+					<h5 class="modal-title" id="deleteConfirmModalLabel">
+						<i class="fas fa-exclamation-triangle me-2 text-warning"></i>Confirmation
+					</h5>
+					<button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+				</div>
+				<div class="modal-body">
+					<p>
+						<i class="fas fa-trash-alt me-2 text-danger"></i>Êtes-vous sûr de vouloir supprimer cet article de votre panier ?</p>
+				</div>
+				<div class="modal-footer">
+					<button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+						<i class="fas fa-times me-1"></i>Annuler
+					</button>
+					<button type="button" class="btn btn-danger" id="confirmDeleteBtn">
+						<i class="fas fa-trash me-1"></i>Supprimer
+					</button>
+				</div>
+			</div>
+		</div>
+	</div>
+
+	<div class="main-container" style="margin-top:100px">
+		<div class="page-header">
+			{% block flashes %}
+				{% for type, messages in app.flashes %}
+					{% for message in messages %}
+						<div class="alert alert-{{ type }}">{{ message }}</div>
+					{% endfor %}
+				{% endfor %}
+			{% endblock %}
+			<h1 class="page-title">Votre Panier</h1>
+			<p class="page-subtitle">Révisez votre sélection avant commande</p>
+		</div>
+
+		{% if panier is not empty %}
+			<div class="panier-items">
+				{% for id, quantite in panier %}
+					{% set livre = livre_repository.find(id) %}
+					<div class="panier-item glass-card" data-id="{{ livre.id }}" style="margin-bottom:5px;">
+						<div class="panier-item-cover">
+							<img src="{{ asset('uploads/images/' ~ livre.image) }}" alt="{{ livre.titre }}">
+						</div>
+						<div class="panier-item-details">
+							<h4>{{ livre.titre }}</h4>
+							<p class="author">{{ livre.editeur }}</p>
+							<p class="author">Prix Unitaire:
+								{{ livre.prix }}DT</p>
+							<div class="panier-item-actions">
+								<div class="quantity-selector">
+									<button class="quantity-btn minus" data-id="{{ livre.id }}">-</button>
+									<span class="quantity">{{ quantite }}</span>
+									<button class="quantity-btn plus" data-id="{{ livre.id }}">+</button>
+								</div>
+								<span class="price">Sous-total :
+									{{ livre.prix * quantite }}DT</span>
+							</div>
+						</div>
+						<button class="remove-item" data-id="{{ livre.id }}">
+							<i class="fas fa-trash"></i>
+						</button>
+					</div>
+				{% endfor %}
+
+				<div class="panier-total glass-card">
+					<h3>Total :
+						<span id="cart-total">{{ total }}</span>DT</h3>
+					{% if app.user %}
+						<a href="{{ path('app_commande') }}" class="btn btn-primary">
+							Passer à la caisse
+						</a>
+					{% else %}
+						<button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#authModal">
+							Passer à la caisse
+						</button>
+					{% endif %}
+				</div>
+				<!-- Modal -->
+				<div class="modal fade" id="authModal" tabindex="-1" aria-labelledby="authModalLabel" aria-hidden="true">
+					<div class="modal-dialog">
+						<div class="modal-content glass-card">
+							<div class="modal-header">
+								<h5 class="modal-title" id="authModalLabel">Connexion requise</h5>
+								<button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+							</div>
+							<div class="modal-body">
+								<p>Pour passer commande, veuillez vous connecter ou créer un compte.</p>
+								<div class="d-flex justify-content-between mt-4">
+									<a href="{{ path('app_login') }}" class="btn btn-primary">
+										<i class="fas fa-sign-in-alt me-1"></i>
+										Se connecter
+									</a>
+									<a href="{{ path('app_register') }}" class="btn btn-secondary">
+										<i class="fas fa-user-plus me-1"></i>
+										Créer un compte
+									</a>
+								</div>
+							</div>
+						</div>
+					</div>
+				</div>
+			</div>
+		{% else %}
+			<div class="panier-vide glass-card">
+				<p>Votre panier est vide</p>
+				<a href="{{ path('home_livre') }}" class="btn btn-primary">Découvrir nos livres</a>
+			</div>
+		{% endif %}
+	</div>
+{% endblock %}
+
+{% block javascripts %}
+	{{ parent() }}
+	<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js" integrity="sha384-geWF76RCwLtnZ8qwWowPQNguL3RmwHVBC9FhGdlKrxdiJJigb/j/68SIy3Te4Bkz" crossorigin="anonymous"></script>
+	<script>
+		document.addEventListener('DOMContentLoaded', function () {
+function updateCartUI(data) { // Update cart counter in the navbar
+const cartCounter = document.getElementById('cart-counter');
+if (cartCounter) {
+cartCounter.textContent = data.totalItems;
+cartCounter.style.display = data.totalItems > 0 ? 'flex' : 'none';
+}
+
+// Update cart total
+const cartTotal = document.getElementById('cart-total');
+if (cartTotal) {
+cartTotal.textContent = data.total.toFixed(2) + ' DT';
+}
+
+// If the cart is empty, reload the page to show the empty cart message
+if (data.totalItems === 0) {
+location.reload();
+return;
+}
+
+// Update quantities and subtotals for remaining items
+if (data.items) {
+document.querySelectorAll('.panier-item').forEach(item => {
+const livreId = item.dataset.id;
+if (data.items[livreId]) { // Update quantity and subtotal for items still in the cart
+const quantityElement = item.querySelector('.quantity');
+const priceElement = item.querySelector('.price');
+
+if (quantityElement) {
+quantityElement.textContent = data.items[livreId];
+}
+
+if (priceElement) { // Calculate the unit price by dividing the current subtotal by the old quantity
+const currentSubtotal = parseFloat(priceElement.textContent.match(/Sous-total: (\d+\.?\d*) DT/)[1]);
+const oldQuantity = parseInt(quantityElement.textContent);
+const prixUnitaire = currentSubtotal / oldQuantity;
+priceElement.textContent = `Sous-total: ${
+(prixUnitaire * data.items[livreId]).toFixed(2)
+} DT`;
+}
+} else { // If the item is no longer in the cart (e.g., deleted), remove it from the DOM
+item.remove();
+}
+});
+}
+}
+
+// Gestion des boutons +/-
+document.querySelectorAll('.plus, .minus').forEach(btn => {
+btn.addEventListener('click', async function () {
+const livreId = this.dataset.id;
+const action = this.classList.contains('plus') ? 'ajouter' : 'retirer';
+
+try {
+const response = await fetch(`/panier/${action}/${livreId}`, {
+method: 'POST',
+headers: {
+'X-Requested-With': 'XMLHttpRequest',
+'Content-Type': 'application/json'
+}
+});
+
+if (response.ok) {
+const data = await response.json();
+updateCartUI(data);
+} else {
+console.error('Erreur lors de la mise à jour de la quantité:', response.statusText);
+}
+} catch (error) {
+console.error('Erreur:', error);
+}
+});
+});
+
+// Gestion de la suppression avec modal
+let currentItemToDelete = null;
+const deleteModal = new bootstrap.Modal(document.getElementById('deleteConfirmModal'));
+
+document.getElementById('confirmDeleteBtn').addEventListener('click', async function () {
+if (currentItemToDelete) {
+try {
+const response = await fetch (`/panier/supprimer/${currentItemToDelete}`, {
+method: 'POST',
+headers: {
+'X-Requested-With': 'XMLHttpRequest',
+'Content-Type': 'application/json'
+}
+});
+
+if (response.ok) {
+const data = await response.json();
+updateCartUI(data); // This will remove the deleted item from the DOM
+deleteModal.hide();
+currentItemToDelete = null; // Reset the variable
+} else {
+console.error('Erreur lors de la suppression:', response.statusText);
+deleteModal.hide();
+}
+} catch (error) {
+console.error('Erreur:', error);
+deleteModal.hide();
+}
+}
+});
+
+document.querySelectorAll('.remove-item').forEach(btn => {
+btn.addEventListener('click', function () {
+currentItemToDelete = this.dataset.id;
+deleteModal.show();
+});
+});
+});
+	</script>
+
+	<style>
+		/* Styles pour le panier */
+		.panier-items {
+			display: flex;
+			flex-direction: column;
+			gap: var(--spacing-unit);
+			margin-bottom: 2rem;
+		}
+
+		.panier-item {
+			display: flex;
+			align-items: center;
+			padding: 1.5rem;
+			gap: 1.5rem;
+			position: relative;
+			transition: all 0.3s ease;
+		}
+
+		.panier-item-cover {
+			width: 80px;
+			height: 120px;
+			overflow: hidden;
+			border-radius: 8px;
+		}
+
+		.panier-item-cover img {
+			width: 100%;
+			height: 100%;
+			object-fit: cover;
+		}
+
+		.panier-item-details {
+			flex: 1;
+		}
+
+		.panier-item-actions {
+			display: flex;
+			align-items: center;
+			gap: 1.5rem;
+			margin-top: 0.5rem;
+		}
+
+		.quantity-selector {
+			display: flex;
+			align-items: center;
+			gap: 0.5rem;
+		}
+
+		.quantity-btn {
+			width: 30px;
+			height: 30px;
+			border-radius: 50%;
+			border: none;
+			background: var(--glass);
+			color: white;
+			cursor: pointer;
+			display: flex;
+			align-items: center;
+			justify-content: center;
+			transition: background 0.2s;
+		}
+
+		.quantity-btn:hover {
+			background: var(--accent);
+		}
+
+		.quantity {
+			min-width: 30px;
+			text-align: center;
+		}
+
+		.remove-item {
+			position: absolute;
+			top: 1rem;
+			right: 1rem;
+			background: transparent;
+			border: none;
+			color: #ff6b6b;
+			cursor: pointer;
+			font-size: 1.2rem;
+			transition: transform 0.2s;
+		}
+
+		.remove-item:hover {
+			transform: scale(1.1);
+		}
+
+		.panier-total {
+			padding: 1.5rem;
+			margin-top: 2rem;
+			display: flex;
+			justify-content: space-between;
+			align-items: center;
+		}
+
+		.panier-vide {
+			padding: 3rem;
+			text-align: center;
+			margin-top: 2rem;
+		}
+		/* Buttons */
+		.btn-primary {
+			background-color: #007bff;
+			border-color: #007bff;
+			transition: background-color 0.3s ease;
+		}
+
+		.btn-primary:hover {
+			background-color: #0056b3;
+		}
+
+		.btn-secondary {
+			color: black;
+			background-color: #6c757d;
+			border-color: #6c757d;
+		}
+
+		.btn-danger {
+			background-color: #dc3545;
+			border-color: #dc3545;
+		}
+
+		.btn-danger:hover {
+			background-color: #c82333;
+		}
+	</style>
+{% endblock %}

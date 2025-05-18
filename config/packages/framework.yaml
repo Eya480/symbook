@@ -1,0 +1,16 @@
+framework:
+  secret: "%env(APP_SECRET)%"
+  session:
+    handler_id: session.handler.native_file
+    save_path: "%kernel.project_dir%/var/sessions/%kernel.environment%"
+    cookie_secure: auto
+    cookie_lifetime: 86400 # 1 jour
+    gc_maxlifetime: 86400 # 1 jour
+    cookie_samesite: lax
+
+when@test:
+  framework:
+    secret: "%env(APP_SECRET)%"
+    test: true
+    session:
+      storage_factory_id: session.storage.factory.mock_file

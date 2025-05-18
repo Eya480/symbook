@@ -1,0 +1,196 @@
+{# templates/compte/index.html.twig #}
+{% extends 'base.html.twig' %}
+
+{% block title %}Mon compte - Symbook
+{% endblock %}
+{% block stylesheets %}
+	<link rel="stylesheet" href="{{ asset('css/homeStyle.css') }}">
+{% endblock %}
+
+{% block nav %}
+	<!-- Effets de particules -->
+	<div class="particles" id="particles"></div>
+
+	<!-- Header -->
+	<header class="glass-card">
+		<nav class="navbar">
+			<a href="#" class="logo">Symbook</a>
+
+			<div class="nav-links">
+				<a href="{{ path('home') }}">
+					<i class="fas fa-home me-1"></i>Accueil</a>
+				<a href="{{ path('home_livre') }}">
+					<i class="fas fa-book me-1"></i>Livres</a>
+				<a href="#">
+					<i class="fas fa-envelope me-1"></i>Contact</a>
+			</div>
+
+			<div class="nav-actions">
+				{% if app.user %}
+					{# Affichage pour utilisateur connecté #}
+					<div class="nav-links">
+						<a href="{{path('app_compte')}}">
+							<i class="fas fa-user me-1"></i>Mon compte</a>
+					</div>
+					<div class="nav-links">
+						<a href="{{ path('app_logout') }}">
+							<i class="fas fa-sign-out-alt me-1"></i>Déconnexion</a>
+					</div>
+				{% else %}
+					{# Affichage pour visiteur non connecté #}
+					<div class="nav-links search-icon">
+						<a href="{{ path('app_register') }}">
+							<i class="fas fa-user-plus me-1"></i>Inscription</a>
+					</div>
+					<div class="nav-links">
+						<a href="{{ path('app_login') }}">
+							<i class="fas fa-sign-in-alt me-1"></i>Connexion</a>
+					</div>
+				{% endif %}
+
+				<div class="search-icon">
+					<i class="fas fa-search"></i>
+				</div>
+				<a href="{{ path('app_panier') }}" class="position-relative text-decoration-none">
+					<i class="fas fa-shopping-bag fs-4 text-white"></i>
+					{% set panier = app.session.get('panier')|default([]) %}
+					<span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger" id="cart-counter" style="display: {{ panier|length > 0 ? 'flex' : 'none' }}">
+						{{ panier|reduce((total, qty) => total + qty, 0) }}
+					</span>
+				</a>
+			</div>
+			<div class="hamburger">
+				<i class="fas fa-bars"></i>
+			</div>
+		</nav>
+	</header>
+{% endblock %}
+
+{% block body %}
+	<div class="main-container" style="margin-top: 100px;">
+		<div class="page-header">
+			<h1 class="page-title">
+				Mon compte</h1>
+		</div>
+
+		<div class="glass-card p-4">
+			<div class="row">
+				<div class="col-md-4">
+					<div class="text-center mb-4">
+						<div class="profile-avatar">
+							<i class="fas fa-user-circle fa-5x"></i>
+						</div>
+						<h3>{{ user.prenom }}
+							{{ user.nom }}</h3>
+						<p class="text-muted">{{ user.email }}</p>
+					</div>
+				</div>
+
+				<div class="col-md-8">
+					<div class="card mb-4">
+						<div class="card-header bg-primary text-white">
+							<i class="fas fa-info-circle me-2"></i>Informations personnelles
+						</div>
+						<div class="card-body">
+							<div class="row">
+								<div class="col-md-6">
+									<p>
+										<strong>Téléphone:</strong>
+										{{ user.tel }}</p>
+									<p>
+										<strong>Adresse:</strong>
+										{{ user.rue }}</p>
+								</div>
+								<div class="col-md-6">
+									<p>
+										<strong>Code postal:</strong>
+										{{ user.codePostal }}</p>
+									<p>
+										<strong>Ville:</strong>
+										{{ user.ville.nomVille }}</p>
+								</div>
+							</div>
+						</div>
+					</div>
+					{% if not is_granted('ROLE_ADMIN')%}
+						<div class="card">
+							<div class="card-header bg-primary text-white">
+								<i class="fas fa-history me-2"></i>Historique des commandes
+							</div>
+							<div class="card-body">
+
+								{% if user.commandes|length > 0 %}
+									<div class="table-responsive">
+										<table class="table">
+											<thead>
+												<tr>
+													<th>Référence</th>
+													<th>Date</th>
+													<th>Total</th>
+													<th>Statut</th>
+													<th>Actions</th>
+												</tr>
+											</thead>
+											<tbody>
+												{% for commande in user.commandes|slice(0,4) %}
+													<tr>
+														<td>{{ commande.reference }}</td>
+														<td>{{ commande.dateCommande|date('d/m/Y') }}</td>
+														<td>{{ commande.montantTotal }}
+															DT</td>
+														<td>
+															<span class="badge bg-{{ commande.status == 'livrée' ? 'success' : 'warning' }}">
+																{{ commande.status.getLabel() }}
+															</span>
+														</td>
+														<td>
+															<a href="{{ path('app_commande_details', {'id': commande.id}) }}" class="btn btn-sm btn-light">
+																<i class="fas fa-eye"></i>
+															</a>
+														</td>
+													</tr>
+												{% endfor %}
+											</tbody>
+										</table>
+									</div>
+									<div class="text-end mt-3">
+										<a href="{{ path('app_mes_commandes') }}" class="btn btn-primary">
+											<i class="fas fa-list me-2"></i>Voir toutes les commandes
+										</a>
+									</div>
+								{% else %}
+									<p class="text-muted">Aucune commande passée pour le moment.</p>
+									<div class="text-end mt-3">
+										<a href="{{ path('app_mes_commandes') }}" class="btn btn-primary">
+											<i class="fas fa-list me-2"></i>Voir toutes les commandes
+										</a>
+									</div>
+								{% endif %}
+							{% else %}
+								<div class="alert alert-info">
+									<i class="fas fa-info-circle me-2"></i>
+									Vous êtes connecté en tant qu'administrateur.
+								</div>
+							{% endif %}
+						</div>
+					</div>
+				</div>
+			</div>
+			<style>
+				/* styles/compte.css */
+				.profile-avatar {
+					color: #007bff;
+					margin-bottom: 1rem;
+				}
+
+				.card {
+					border-radius: 10px;
+					box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+					margin-bottom: 20px;
+				}
+
+				.card-header {
+					border-radius: 10px 10px 0 0 !important;
+				}
+			</style>
+		{% endblock %}

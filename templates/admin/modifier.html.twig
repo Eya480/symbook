@@ -1,0 +1,80 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Modifier Commande
+{% endblock %}
+
+{% block body %}
+	<h1>Modifier la commande #{{ commande.id }}</h1>
+
+	{{ form_start(form) }}
+	{{ form_widget(form) }}
+	<button class="btn btn-primary">Enregistrer</button>
+	<a href="{{ path('admin_commandes') }}" class="btn btn-secondary mt-3">Retour à la liste</a>
+
+	{{ form_end(form) }}
+
+	<style>
+		/* Conteneur global centré */
+		form {
+			width: 800px;
+			margin: 50px auto;
+			padding: 2rem;
+			background: rgba(204, 201, 209, 0.65);
+			backdrop-filter: blur(10px);
+			border-radius: 20px;
+			box-shadow: 0 10px 40px rgba(0, 0, 0, 0.15);
+			display: grid;
+			grid-template-columns: 1fr;
+			gap: 20px;
+		}
+
+
+		form > button,
+		form > div:last-child {
+			grid-column: span 1;
+			justify-self: center;
+		}
+
+
+		/* Styles optionnels pour affiner les champs */
+		form label {
+			display: block;
+			margin-bottom: 6px;
+			font-weight: bold;
+			color: #333;
+		}
+
+		form input,
+		form select {
+			width: 100%;
+			padding: 10px 15px;
+			border: 1px solid #ccc;
+			border-radius: 8px;
+			font-size: 1rem;
+			transition: 0.3s ease;
+		}
+
+		form input:focus {
+			outline: none;
+			border-color: #007bff;
+			box-shadow: 0 0 8px rgba(0, 123, 255, 0.3);
+		}
+
+		/* Bouton stylisé */
+		form button {
+			padding: 10px 25px;
+			background-color: #007bff;
+			color: #fff;
+			border: none;
+			border-radius: 8px;
+			font-size: 1.1rem;
+			cursor: pointer;
+			transition: background-color 0.3s ease;
+		}
+
+		form button:hover {
+			background-color: #0056b3;
+		}
+	</style>
+{% endblock %}
+{% block footer %}{% endblock %}

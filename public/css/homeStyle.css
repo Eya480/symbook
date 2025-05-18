@@ -25,7 +25,18 @@ body {
   line-height: 1.6;
   overflow-x: hidden;
 }
-
+.chatbot-info {
+  padding: 20px 0;
+  text-align: center;
+  color: #fff;
+  background: linear-gradient(
+    135deg,
+    rgba(255, 255, 255, 0.1),
+    rgba(255, 255, 255, 0.05)
+  );
+  border-radius: 10px;
+  margin: 20px 0;
+}
 /* ===== Typographie futuriste ===== */
 @font-face {
   font-family: "Clash Display";

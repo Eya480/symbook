@@ -46,8 +46,10 @@
 							</div>
 							<div class="text-center mt-auto">
 								<a href="{{ path('categorie_delete', {id: c.id}) }}" class="btn btn-outline-danger btn-sm" onclick="return confirm('Êtes-vous sûr de vouloir supprimer cette catégorie ?')">
-									<i class="bi bi-trash"></i>
 									Supprimer
+								</a>
+								<a href="{{ path('admin_categories_update', {id: c.id}) }}" class=" btn btn-outline-danger btn-sm">
+									Modifier
 								</a>
 							</div>
 						</div>
@@ -67,5 +69,4 @@
 		{% endif %}
 	</div>
 {% endblock %}
-{% block footer %}
-{% endblock %}
+{% block footer %}{% endblock %}

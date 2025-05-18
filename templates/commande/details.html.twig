@@ -3,6 +3,7 @@
 {% block title %}Confirmation de commande | Symbook
 {% endblock %}
 
+
 {% block stylesheets %}
 	<link rel="stylesheet" href="{{ asset('css/homeStyle.css') }}">
 {% endblock %}
@@ -21,8 +22,7 @@
 					<i class="fas fa-home me-1"></i>Accueil</a>
 				<a href="{{ path('home_livre') }}">
 					<i class="fas fa-book me-1"></i>Livres</a>
-				<a href="#">
-					<i class="fas fa-envelope me-1"></i>Contact</a>
+				
 			</div>
 
 			<div class="nav-actions">
@@ -163,16 +163,25 @@
 			</div>
 
 			<div class="d-flex justify-content-between mt-4">
-				<a href="{{ path('app_compte') }}" class="btn btn-secondary">
-					<i class="fas fa-arrow-left me-2"></i>Retour à mon compte
-				</a>
+				{% if not is_granted('ROLE_ADMIN')%}
+					<a href="{{ path('app_compte') }}" class="btn btn-secondary">
+						<i class="fas fa-arrow-left me-2"></i>Retour à mon compte
+					</a>
+				{% endif %}
+				{% if is_granted('ROLE_ADMIN')%}
+					<a href="{{ path('admin_commandes') }}" class="btn btn-secondary">
+						<i class="fas fa-arrow-left me-2"></i>Retour à la gestion des commandes
+					</a>
+				{% endif %}
 				<button class="btn btn-primary print-button" onclick="handlePrint()">
 					<i class="fas fa-print me-2"></i>Imprimer
 				</button>
-				{% if commande.status.getLabel() == 'Livrée' %}
-					<a href="#" class="btn btn-outline-danger mt-3">
-						<i class="fas fa-exclamation-circle me-2"></i>Signaler un problème
-					</a>
+				{% if not is_granted('ROLE_ADMIN')%}
+					{% if commande.status.getLabel() == 'Livrée' %}
+						<a href="#" class="btn btn-outline-danger mt-3">
+							<i class="fas fa-exclamation-circle me-2"></i>Signaler un problème
+						</a>
+					{% endif %}
 				{% endif %}
 			</div>
 		</div>

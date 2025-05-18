@@ -21,8 +21,7 @@
 					<i class="fas fa-home me-1"></i>Accueil</a>
 				<a href="{{ path('home_livre') }}">
 					<i class="fas fa-book me-1"></i>Livres</a>
-				<a href="#">
-					<i class="fas fa-envelope me-1"></i>Contact</a>
+				
 			</div>
 
 			<div class="nav-actions">
@@ -170,6 +169,9 @@
 								<div class="alert alert-info">
 									<i class="fas fa-info-circle me-2"></i>
 									Vous êtes connecté en tant qu'administrateur.
+									<a href="{{ path('admin_livres') }}" class="text-muted">
+										accéder votre espace.
+										</a>
 								</div>
 							{% endif %}
 						</div>

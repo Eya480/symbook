@@ -7,3 +7,6 @@ app_commande_confirmer:
   path: /commande/confirmer
   controller: App\Controller\CommandeController::confirmer
   methods: POST
+app_compte:
+  path: /compte
+  controller: App\Controller\CompteController::index

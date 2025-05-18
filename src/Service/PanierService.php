@@ -2,7 +2,6 @@
 
 namespace App\Service;
 
-use App\Repository\LivreRepository;
 use App\Repository\LivresRepository;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Component\HttpFoundation\RequestStack;

@@ -1,0 +1,57 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Hello BotmanController!{% endblock %}
+
+{% block body %}
+    <style>
+        .example-wrapper {
+            margin: 1em auto;
+            max-width: 800px;
+            width: 95%;
+            font: 18px/1.5 sans-serif;
+        }
+        .example-wrapper code {
+            background: #F5F5F5;
+            padding: 2px 6px;
+        }
+    </style>
+
+    <div class="example-wrapper">
+        <h1>Hello {{ controller_name }}! ✅</h1>
+
+        <p>This friendly message is coming from:</p>
+        <ul>
+            <li>Your controller at <code>C:/xampp1/htdocs/symphony 2025/Atelier 4/symbook/src/Controller/BotmanController.php</code></li>
+            <li>Your template at <code>C:/xampp1/htdocs/symphony 2025/Atelier 4/symbook/templates/botman/index.html.twig</code></li>
+        </ul>
+
+        <p>Interactez avec notre chatbot en cliquant sur le bouton de chat en bas à droite. Essayez de dire "hello", "comment vas-tu", "livre [titre]", ou "catégorie [nom]" !</p>
+    </div>
+
+    <!-- Configuration du widget BotMan -->
+    <script>
+        var botmanWidget = {
+            frameEndpoint: '{{ path('app_chatframe') }}',
+            chatServer: '{{ path('app_botman') }}',
+            introMessage: 'Bonjour, je suis votre assistant librairie Symbook !',
+            title: 'Chatbot Symbook',
+            mainColor: '#456765',
+            bubbleBackground: '#ff76f4',
+            aboutText: 'Propulsé par BotMan'
+        };
+
+        // Débogage de l'initialisation du widget
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log('Configuration Botman widget :', botmanWidget);
+            console.log('frameEndpoint:', '{{ path('app_chatframe') }}');
+            console.log('chatServer:', '{{ path('app_botman') }}');
+            if (typeof BotManWidget === 'undefined') {
+                console.error('BotManWidget non chargé. Vérifiez le CDN ou la connexion réseau.');
+            } else {
+                console.log('BotManWidget chargé avec succès.');
+            }
+        });
+    </script>
+    <!-- Charger le script du widget BotMan -->
+    <script src="https://cdn.jsdelivr.net/npm/botman-web-widget@0/build/js/widget.js" onerror="console.error('Échec du chargement du script BotMan widget')"></script>
+{% endblock %}

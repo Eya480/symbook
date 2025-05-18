@@ -8,6 +8,10 @@ framework:
     gc_maxlifetime: 86400 # 1 jour
     cookie_samesite: lax
 
+    cookie_httponly: true # Prevent JavaScript access to session cookie
+    gc_probability: 1
+    gc_divisor: 100
+
 when@test:
   framework:
     secret: "%env(APP_SECRET)%"

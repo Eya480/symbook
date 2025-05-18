@@ -2,7 +2,8 @@
 
 {% block title %}Librairie Symbook | Le futur de la lecture
 {% endblock %}
-{% block stylesheets %}<link rel="stylesheet" href="{{ asset('css/homeStyle.css') }}">
+{% block stylesheets %}
+	<link rel="stylesheet" href="{{ asset('css/homeStyle.css') }}">
 {% endblock %}
 {% block nav %}
 	<!-- Effets de particules -->
@@ -18,15 +19,13 @@
 					<i class="fas fa-home me-1"></i>Accueil</a>
 				<a href="{{ path('home_livre') }}">
 					<i class="fas fa-book me-1"></i>Livres</a>
-				<a href="#">
-					<i class="fas fa-envelope me-1"></i>Contact</a>
 			</div>
 
 			<div class="nav-actions">
 				{% if app.user %}
 					{# Affichage pour utilisateur connecté #}
 					<div class="nav-links">
-						<a href="{{path('app_compte')}}">
+						<a href="{{ path('app_compte') }}">
 							<i class="fas fa-user me-1"></i>Mon compte</a>
 					</div>
 					<div class="nav-links">
@@ -37,103 +36,106 @@
 					{# Affichage pour visiteur non connecté #}
 					<div class="nav-links search-icon">
 						<a href="{{ path('app_register') }}">
-							<i class="fas fa-user-plus me-1"></i>Inscription</a>
-					</div>
-					<div class="nav-links">
-						<a href="{{ path('app_login') }}">
-							<i class="fas fa-sign-in-alt me-1"></i>Connexion</a>
-					</div>
-				{% endif %}
+							<i class="fas fa-user-plus me-1"></i>Inscription</-</div>
+						<div class="nav-links">
+							<a href="{{ path('app_login') }}">
+								<i class="fas fa-sign-in-alt me-1"></i>Connexion</a>
+						</div>
+					{% endif %}
 
-				<div class="search-icon">
-					<i class="fas fa-search"></i>
+					<div class="search-icon">
+						<i class="fas fa-search"></i>
+					</div>
+					<a href="{{ path('app_panier') }}" class="position-relative text-decoration-none">
+						<i class="fas fa-shopping-bag fs-4 text-white"></i>
+						{% set panier = app.session.get('panier')|default([]) %}
+						<span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger" id="cart-counter" style="display: {{ panier|length > 0 ? 'flex' : 'none' }}">
+							{{ panier|reduce((total, qty) => total + qty, 0) }}
+						</span>
+					</a>
 				</div>
-				<a href="{{ path('app_panier') }}" class="position-relative text-decoration-none">
-					<i class="fas fa-shopping-bag fs-4 text-white"></i>
-					{% set panier = app.session.get('panier')|default([]) %}
-					<span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger" id="cart-counter" style="display: {{ panier|length > 0 ? 'flex' : 'none' }}">
-						{{ panier|reduce((total, qty) => total + qty, 0) }}
-					</span>
-				</a>
+				<div class="hamburger">
+					<i class="fas fa-bars"></i>
+				</div>
+			</nav>
+		</header>
+	{% endblock %}
+	{% block body %}
+		<!-- Hero Section -->
+		<section class="hero">
+			<div class="hero-content">
+				<h1>L'avenir de la
+					<span class="gradient-text">lecture</span>
+					est ici</h1>
+				<p>Découvrez notre collection de livres en édition limitée avec réalité augmentée et expériences de lecture immersives.</p>
+				<div class="btn-group">
+					<a href="{{ path('home_livre') }}" class="btn btn-primary">
+						Explorer maintenant
+						<i class="fas fa-arrow-right"></i>
+					</a>
+				</div>
 			</div>
-			<div class="hamburger">
-				<i class="fas fa-bars"></i>
+			<div class="hero-image">
+				<img src="https://images.unsplash.com/photo-1589998059171-988d887df646?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1000&q=80" alt="Livre futuriste avec hologramme">
 			</div>
-		</nav>
-	</header>
-{% endblock %}
-{% block body %}
+		</section>
 
-	<!-- Hero Section -->
-	<section class="hero">
-		<div class="hero-content">
-			<h1>L'avenir de la
-				<span class="gradient-text">lecture</span>
-				est ici</h1>
-			<p>Découvrez notre collection de livres en édition limitée avec réalité augmentée et expériences de lecture immersives.</p>
-			<div class="btn-group">
-				<a href="{{ path('home_livre') }}" class="btn btn-primary">
-					Explorer maintenant
+		<!-- Featured Books -->
+		<section class="featured">
+			<div class="section-header">
+				<h2 class="section-title">Nouveautés
+					<span class="gradient-text">exclusives</span>
+				</h2>
+				<a href="{{ path('home_livre') }}" class="view-all">
+					Tout voir
 					<i class="fas fa-arrow-right"></i>
 				</a>
-
 			</div>
-		</div>
-		<div class="hero-image">
-			<img src="https://images.unsplash.com/photo-1589998059171-988d887df646?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1000&q=80" alt="Livre futuriste avec hologramme">
-		</div>
-	</section>
 
-	<!-- Featured Books -->
-	<section class="featured">
-		<div class="section-header">
-			<h2 class="section-title">Nouveautés
-				<span class="gradient-text">exclusives</span>
-			</h2>
-			<a href="{{ path('home_livre') }}" class="view-all">
-				Tout voir
-				<i class="fas fa-arrow-right"></i>
-			</a>
-		</div>
-
-		<div class="book-grid">
-			{% for livre in livres|slice(0, 3) %}
-				<div class="book-card">
-					<div class="book-inner">
-						<div class="book-cover">
-							<img src="{{ asset('uploads/images/' ~ livre.image) }}" alt="{{ livre.titre }}">
-							<h3 class="book-title">{{ livre.titre }}</h3>
-							<p class="book-author">{{ livre.editeur }}</p>
-							<div class="book-price">
-								<span class="price">{{ livre.prix }}DT</span>
-								<button class="add-to-cart" data-id="{{ livre.id }}">Ajouter</button>
+			<div class="book-grid">
+				{% for livre in livres|slice(0, 3) %}
+					<div class="book-card">
+						<div class="book-inner">
+							<div class="book-cover">
+								<img src="{{ asset('Uploads/images/' ~ livre.image) }}" alt="{{ livre.titre }}">
+								<h3 class="book-title">{{ livre.titre }}</h3>
+								<p class="book-author">{{ livre.editeur }}</p>
+								<div class="book-price">
+									<span class="price">{{ livre.prix }}DT</span>
+									<button class="add-to-cart" data-id="{{ livre.id }}">Ajouter</button>
+								</div>
 							</div>
-						</div>
-						<div class="book-back">
-							<p class="book-description">{{ livre.resume|slice(0, 150) }}...</p>
-							<div class="book-details">
-								<span class="detail-item">
-									<i class="fas fa-star"></i>
-									1/5
-								</span>
-								<span class="detail-item">
-									<i class="fas fa-tag"></i>
-									{{ livre.categorie.libelle }}
-								</span>
-								<span class="detail-item">
-									<i class="fas fa-tag"></i>
-									{{ livre.dateEdition | date('d/m/Y')}}
-								</span>
+							<div class="book-back">
+								<p class="book-description">{{ livre.resume|slice(0, 150) }}...</p>
+								<div class="book-details">
+									<span class="detail-item">
+										<i class="fas fa-star"></i>
+										1/5
+									</span>
+									<span class="detail-item">
+										<i class="fas fa-tag"></i>
+										{{ livre.categorie.libelle }}
+									</span>
+									<span class="detail-item">
+										<i class="fas fa-tag"></i>
+										{{ livre.dateEdition | date('d/m/Y') }}
+									</span>
+								</div>
 							</div>
 						</div>
 					</div>
-				</div>
-			{% endfor %}
-		</div>
-	</section>
-	<!-- Scripts -->
-	<script>
-		// Effets de particules
+				{% endfor %}
+			</div>
+		</section>
+
+		<section class="chatbot-info">
+			<div class="container">
+				<p>Parlez à notre assistant librairie ! Cliquez sur le bouton de chat en bas à droite pour commencer. Essayez de dire "hello", "livre [titre]" ou "catégorie [nom]" !</p>
+			</div>
+		</section>
+
+		<script>
+			// Effets de particules
 const particlesContainer = document.getElementById('particles');
 const particleCount = 30;
 
@@ -141,22 +143,18 @@ for (let i = 0; i < particleCount; i++) {
 const particle = document.createElement('div');
 particle.classList.add('particle');
 
-// Taille aléatoire entre 2px et 6px
 const size = Math.random() * 4 + 2;
 particle.style.width = `${size}px`;
 particle.style.height = `${size}px`;
 
-// Position aléatoire
 particle.style.left = `${
 Math.random() * 100
 }%`;
 particle.style.bottom = `-${size}px`;
 
-// Animation avec durée aléatoire
 const duration = Math.random() * 20 + 10;
 particle.style.animationDuration = `${duration}s`;
 
-// Délai aléatoire
 particle.style.animationDelay = `${
 Math.random() * 20
 }s`;
@@ -184,7 +182,7 @@ card.style.transform = 'rotateY(0deg) rotateX(0deg)';
 });
 });
 
-
+// Gestion des ajouts au panier
 document.querySelectorAll('.add-to-cart').forEach(btn => {
 btn.addEventListener('click', async function (e) {
 e.preventDefault();
@@ -204,19 +202,16 @@ if (response.ok) {
 const data = await response.json();
 const counter = document.getElementById('cart-counter');
 
-// Mise à jour du compteur
 if (counter) {
 counter.textContent = data.totalItems;
 counter.style.display = 'flex';
 
-// Animation
 counter.classList.add('pulse');
 setTimeout(() => {
 counter.classList.remove('pulse');
 }, 500);
 }
 
-// Feedback visuel sur le bouton
 this.innerHTML = '<i class="fas fa-check"></i> Ajouté';
 setTimeout(() => {
 this.innerHTML = 'Ajouter';
@@ -227,5 +222,27 @@ console.error('Erreur:', error);
 }
 });
 });
-	</script>
-{% endblock %}
+
+var botmanWidget = {
+frameEndpoint: '{{ path('app_chatframe') }}',
+chatServer: '{{ path('app_botman') }}',
+introMessage: 'Bonjour, je suis votre assistant librairie Symbook !',
+title: 'Chatbot Symbook',
+mainColor: '#456765',
+bubbleBackground: '#ff76f4',
+aboutText: 'Propulsé par BotMan'
+};
+
+document.addEventListener('DOMContentLoaded', function () {
+console.log('Botman widget config:', botmanWidget);
+console.log('frameEndpoint:', '{{ path('app_chatframe') }}');
+console.log('chatServer:', '{{ path('app_botman') }}');
+if (typeof BotManWidget === 'undefined') {
+console.error('BotManWidget not loaded. Check CDN or network.');
+} else {
+console.log('BotManWidget loaded successfully.');
+}
+});
+		</script>
+		<script src="https://cdn.jsdelivr.net/npm/botman-web-widget@0/build/js/widget.js" onerror="console.error('Failed to load BotMan widget script')"></script>
+	{% endblock %}

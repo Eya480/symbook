@@ -49,8 +49,9 @@
 								Commandes
 							</a>
 						</li>
-						
-						<li class="nav-item">
+
+
+						<li class="nav-item" style="margin-top:200px">
 							<a class="nav-link text-white" href="{{ path('app_logout') }}">
 								<i class="fas fa-sign-out-alt me-2"></i>
 								Déconnexion
@@ -90,18 +91,18 @@
 				</style>
 			{% endblock %}
 			<div id="main-content">
-	<div class="container mt-3">
+				<div class="container mt-3">
 
-				{% block body %}
-					{% block flashes %}
-						{% for type, messages in app.flashes %}
-							{% for message in messages %}
-								<div class="alert alert-{{ type }}">{{ message }}</div>
+					{% block body %}
+						{% block flashes %}
+							{% for type, messages in app.flashes %}
+								{% for message in messages %}
+									<div class="alert alert-{{ type }}">{{ message }}</div>
+								{% endfor %}
 							{% endfor %}
-						{% endfor %}
+						{% endblock %}
 					{% endblock %}
-				{% endblock %}
-			</div>
+				</div>
 			</div>
 			{% block javascripts %}
 

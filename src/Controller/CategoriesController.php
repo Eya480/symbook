@@ -59,25 +59,24 @@ final class CategoriesController extends AbstractController
         ]);
     }
 
-    #[Route('/admin/categories/update', name: 'admin_categories_update')]
+    #[Route('/admin/categories/update/{id}', name: 'admin_categories_update')]
     public function update(Request $req, EntityManagerInterface $em, Categories $c): Response
     {
-
-        //affichage du form
         $form = $this->createForm(CategoriesType::class, $c);
-        //traitement
-        $form->handleRequest($req); //permet de lier de form a l'objet categorie
+        $form->handleRequest($req);
+
         if ($form->isSubmitted() && $form->isValid()) {
             $em->persist($c);
             $em->flush();
-            $this->addFlash('success', 'La categorie a été modifiée dans la base');
+            $this->addFlash('success', 'La catégorie a été modifiée dans la base');
             return $this->redirectToRoute('admin_categories');
         }
 
         return $this->render('categories/modifierCat.html.twig', [
-            'f' => $form,
+            'f' => $form->createView(),
         ]);
     }
+
 
     #[Route('admin/categories/delete/{id}', name: 'categorie_delete')]
     public function delete(CategoriesRepository $rep, $id, EntityManagerInterface $em): Response

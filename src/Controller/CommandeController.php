@@ -210,8 +210,8 @@ class CommandeController extends AbstractController
                         'quantity' => 1,
                     ]],
                     'mode' => 'payment',
-                    'success_url' => 'http://127.0.0.1:8000'.$this->generateUrl('app_commande_confirmation', ['id' => $commande->getId()], true),
-                    'cancel_url' => 'http://127.0.0.1:8000'.$this->generateUrl('app_commande', [], true),
+                    'success_url' => 'http://127.0.0.1:8000' . $this->generateUrl('app_commande_confirmation', ['id' => $commande->getId()], true),
+                    'cancel_url' => 'http://127.0.0.1:8000' . $this->generateUrl('app_commande', [], true),
                     'metadata' => [
                         'commande_id' => $commande->getId(),
                         'user_id' => $user->getUserIdentifier()
@@ -342,11 +342,6 @@ class CommandeController extends AbstractController
     public function showDetails(Commande $commande): Response
     {
         $this->denyAccessUnlessGranted('IS_AUTHENTICATED_FULLY');
-        // Vérifie que l'utilisateur est bien le propriétaire de la commande
-        if ($commande->getUtilisateur() !== $this->getUser()) {
-            throw $this->createAccessDeniedException('Accès non autorisé');
-        }
-
         return $this->render('commande/details.html.twig', [
             'commande' => $commande,
         ]);

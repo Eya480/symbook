@@ -19,16 +19,14 @@ final class BotmanController extends AbstractController
     #[Route('/botman', name: 'app_botman', methods: ['GET', 'POST'])]
     public function handle(Request $request, LivresRepository $livresRepository, CategoriesRepository $categoriesRepository, LoggerInterface $logger): Response
     {
-        // Start session explicitly
         $session = $request->getSession();
         $session->start();
 
-        // Start output buffering with a callback to log and discard output
         ob_start(function ($buffer) use ($logger) {
             if ($buffer) {
                 $logger->warning('Captured output in main buffer', ['output' => $buffer]);
             }
-            return ''; // Discard output
+            return ''; 
         });
 
         // Log incoming request
@@ -37,11 +35,8 @@ final class BotmanController extends AbstractController
             'content' => $request->getContent(),
             'headers' => $request->headers->all(),
         ]);
-
-        // Load WebDriver
         DriverManager::loadDriver(\BotMan\Drivers\Web\WebDriver::class);
 
-        // BotMan configuration
         $config = [
             'web' => [
                 'matchingData' => [
@@ -50,13 +45,10 @@ final class BotmanController extends AbstractController
             ],
         ];
 
-        // Create BotMan instance
         $botman = BotManFactory::create($config);
 
-        // Store bot responses in the format expected by the widget
         $responses = [];
 
-        // Helper function to add responses
         $addResponse = function ($type, $text, $attachment = null, $additional = []) use (&$responses, $logger) {
             $responses[] = [
                 'type' => $type,
@@ -66,8 +58,6 @@ final class BotmanController extends AbstractController
             ];
             $logger->debug('Added response', ['text' => $text]);
         };
-
-        // Define bot interactions
         $botman->hears('(hello|hi|hey|bonjour|salut)', function (BotMan $bot) use ($addResponse) {
             $addResponse('text', 'Bonjour ! Je suis votre assistant de librairie. Comment puis-je vous aider ?');
         });
@@ -76,7 +66,6 @@ final class BotmanController extends AbstractController
             $addResponse('text', 'Je suis un bot, donc je fonctionne parfaitement bien ! Comment puis-je vous aider ?');
         });
 
-        // Recherche de livres avec options avancées
         $botman->hears('(recherche|cherche|trouve) (livre|livres) {query}', function (BotMan $bot, $query) use ($livresRepository, $addResponse) {
             $livres = $livresRepository->createQueryBuilder('l')
                 ->where('l.titre LIKE :query OR l.editeur LIKE :query')
@@ -99,8 +88,6 @@ final class BotmanController extends AbstractController
                 $addResponse('text', $message);
             }
         });
-
-        // Recherche par catégorie avec détails
         $botman->hears('(catégorie|categorie|categories) {nom}', function (BotMan $bot, $nom) use ($categoriesRepository, $livresRepository, $addResponse) {
             $categorie = $categoriesRepository->findOneBy(['libelle' => $nom]);
 
@@ -125,7 +112,6 @@ final class BotmanController extends AbstractController
             $addResponse('text', $message);
         });
 
-        // Détails complets d'un livre spécifique
         $botman->hears('(livre|detail|détail) {titre}', function (BotMan $bot, $titre) use ($livresRepository, $addResponse) {
             $livre = $livresRepository->createQueryBuilder('l')
                 ->where('l.titre LIKE :titre')
@@ -152,7 +138,6 @@ final class BotmanController extends AbstractController
             $addResponse('text', $message);
         });
 
-        // Recherche par prix
         $botman->hears('(livres|livre) (moins de|jusqu\'à|max|maximum) {prix} DT', function (BotMan $bot, $prix) use ($livresRepository, $addResponse) {
             $livres = $livresRepository->createQueryBuilder('l')
                 ->where('l.prix <= :prix')
@@ -173,7 +158,6 @@ final class BotmanController extends AbstractController
             }
         });
 
-        // Recherche par éditeur
         $botman->hears('(livres|livre) (éditeur|editeur|publié par) {editeur}', function (BotMan $bot, $editeur) use ($livresRepository, $addResponse) {
             $livres = $livresRepository->createQueryBuilder('l')
                 ->where('l.editeur LIKE :editeur')

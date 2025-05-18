@@ -20,7 +20,12 @@
 				<a href="{{ path('home_livre') }}">
 					<i class="fas fa-book me-1"></i>Livres</a>
 			</div>
-
+			{% if is_granted('ROLE_USER')%}
+				<div class="nav-links">
+					<a href="{{ path('app_mes_commandes') }}">
+						<i class="fas fa-list me-2"></i>Mes Commandes</a>
+				</div>
+			{% endif %}
 			<div class="nav-actions">
 				{% if app.user %}
 					{# Affichage pour utilisateur connecté #}

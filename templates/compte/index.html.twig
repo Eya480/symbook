@@ -21,7 +21,7 @@
 					<i class="fas fa-home me-1"></i>Accueil</a>
 				<a href="{{ path('home_livre') }}">
 					<i class="fas fa-book me-1"></i>Livres</a>
-				
+
 			</div>
 
 			<div class="nav-actions">
@@ -36,6 +36,12 @@
 							<i class="fas fa-sign-out-alt me-1"></i>Déconnexion</a>
 					</div>
 				{% else %}
+					{% if is_granted('ROLE_ADMIN')%}
+						<div class="nav-links">
+							<a href="{{ path('app_mes_commandes') }}">
+								<i class="fas fa-list me-2"></i>Mes Commandes</a>
+						</div>
+					{% endif %}
 					{# Affichage pour visiteur non connecté #}
 					<div class="nav-links search-icon">
 						<a href="{{ path('app_register') }}">
@@ -46,6 +52,7 @@
 							<i class="fas fa-sign-in-alt me-1"></i>Connexion</a>
 					</div>
 				{% endif %}
+
 
 				<div class="search-icon">
 					<i class="fas fa-search"></i>
@@ -171,7 +178,7 @@
 									Vous êtes connecté en tant qu'administrateur.
 									<a href="{{ path('admin_livres') }}" class="text-muted">
 										accéder votre espace.
-										</a>
+									</a>
 								</div>
 							{% endif %}
 						</div>

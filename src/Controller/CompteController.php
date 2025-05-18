@@ -45,23 +45,41 @@ class CompteController extends AbstractController
             throw $this->createAccessDeniedException('Vous devez être connecté pour voir vos commandes.');
         }
 
+        // Construction de la requête de base
         $queryBuilder = $this->entityManager->getRepository(Commande::class)
             ->createQueryBuilder('c')
             ->where('c.Utilisateur = :user')
             ->setParameter('user', $user)
             ->orderBy('c.dateCommande', 'DESC');
 
+        // Gestion du filtre par statut
+        $statusFilter = $request->query->get('status');
+
+        if ($statusFilter) {
+            try {
+                // Validation du statut via l'enum
+                $status = EStatutCom::from($statusFilter);
+                $queryBuilder->andWhere('c.status = :status')
+                    ->setParameter('status', $status->value);
+            } catch (\ValueError $e) {
+                // Si le statut n'est pas valide, on ignore le filtre
+                $this->addFlash('warning', 'Le statut sélectionné n\'est pas valide');
+            }
+        }
+
+        // Pagination
         $pagination = $paginator->paginate(
             $queryBuilder,
             $request->query->getInt('page', 1),
-            5
+            4
         );
 
         return $this->render('compte/mes_commandes.html.twig', [
             'commandes' => $pagination,
+            'status_filter' => $statusFilter,
+            'all_statuses' => EStatutCom::cases()
         ]);
     }
-
     #[Route('/mon-compte/commande/{id}/annuler', name: 'app_annuler_commande', methods: ['POST'])]
     public function annulerCommande(Commande $commande, Request $request): Response
     {

@@ -13,11 +13,20 @@ use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 final class HomeController extends AbstractController
 {
     #[Route('/', name: 'home')]
-    public function index(LivresRepository $r): Response
+    public function index(LivresRepository $livreRepository, Request $request): Response
     {
-        $liv = $r->findAll();
+
+        $searchQuery = $request->query->get('q');
+
+        if ($searchQuery) {
+            $livres = $livreRepository->search($searchQuery);
+        } else {
+            $livres = $livreRepository->findAll();
+        }
+
         return $this->render('home/home.html.twig', [
-            'livres' => $liv
+            'livres' => $livres,
+            'searchQuery' => $searchQuery
         ]);
     }
 

@@ -2,66 +2,104 @@
 
 {% block title %}Liste des utilisateurs{% endblock %}
 
+{% block stylesheets %}
+    {{ parent() }}
+    <style>
+        .pagination {
+            display: flex;
+            justify-content: center;
+            margin-top: 20px;
+        }
+        .page-item.active .page-link {
+            background-color: #0d6efd;
+            border-color: #0d6efd;
+        }
+        .page-link {
+            color: #0d6efd;
+        }
+        .table-responsive {
+            overflow-x: auto;
+        }
+    </style>
+{% endblock %}
+
 {% block body %}
-    <h1 class="my-4">Liste des utilisateurs</h1>
+    <div class="container mt-4">
+        <h1 class="mb-4">Liste des utilisateurs</h1>
 
-    <table class="table table-bordered table-striped table-hover">
-        <thead class="table-dark">
-        <tr>
-            <th>ID</th>
-            <th>Nom</th>
-            <th>Prénom</th>
-            <th>Téléphone</th>
-            <th>Adresse</th>
-            <th>Code Postal</th>
-            <th>Carte Crédit</th>
-            <th>Email</th>
-            <th>Rôles</th>
-            <th>Vérifié</th>
-            <th>Actions</th>
-        </tr>
-        </thead>
-        <tbody>
-        {% for utilisateur in utilisateurs %}
-            <tr>
-                <td>{{ utilisateur.id }}</td>
-                <td>{{ utilisateur.nom }}</td>
-                <td>{{ utilisateur.prenom }}</td>
-                <td>{{ utilisateur.tel }}</td>
-                <td>{{ utilisateur.rue }}</td>
-                <td>{{ utilisateur.codePostal }}</td>
-                <td>{{ utilisateur.carteCredit }}</td>
-                <td>{{ utilisateur.email }}</td>
-                <td>
-                    {% for role in utilisateur.roles %}
-                        <span class="badge bg-primary">{{ role }}</span>
-                    {% endfor %}
-                </td>
-                <td>
-                    {% if utilisateur.isVerified %}
-                        <span class="badge bg-success">Oui</span>
-                    {% else %}
-                        <span class="badge bg-danger">Non</span>
-                    {% endif %}
-                </td>
-                <td>
-                    <a href="{{ path('app_utilisateur_show', {'id': utilisateur.id}) }}" class="btn btn-sm btn-info mb-1">
-                        <i class="bi bi-eye"></i> Voir
-                    </a>
-                    <a href="{{ path('app_utilisateur_edit', {'id': utilisateur.id}) }}" class="btn btn-sm btn-warning">
-                        <i class="bi bi-pencil"></i> Modifier
-                    </a>
-                </td>
-            </tr>
-        {% else %}
-            <tr>
-                <td colspan="11" class="text-center text-muted">Aucun utilisateur trouvé.</td>
-            </tr>
-        {% endfor %}
-        </tbody>
-    </table>
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <div class="text-muted">
+                Total: {{ pagination.getTotalItemCount }} utilisateurs
+            </div>
+            <a href="{{ path('app_utilisateur_new') }}" class="btn btn-success">
+                <i class="bi bi-plus-circle"></i> Ajouter un utilisateur
+            </a>
+        </div>
 
-    <a href="{{ path('app_utilisateur_new') }}" class="btn btn-success mt-3">
-        <i class="bi bi-plus-circle"></i> Ajouter un utilisateur
-    </a>
+        <div class="table-responsive">
+            <table class="table table-bordered table-striped table-hover">
+                <thead class="table-dark">
+                <tr>
+                    <th>ID</th>
+                    <th>Nom</th>
+                    <th>Prénom</th>
+                    <th>Téléphone</th>
+                    <th>Adresse</th>
+                    <th>Code Postal</th>
+                    <th>Email</th>
+                    <th>Rôles</th>
+                    <th>Vérifié</th>
+                    <th>Actions</th>
+                </tr>
+                </thead>
+                <tbody>
+                {% for utilisateur in pagination %}
+                    <tr>
+                        <td>{{ utilisateur.id }}</td>
+                        <td>{{ utilisateur.nom }}</td>
+                        <td>{{ utilisateur.prenom }}</td>
+                        <td>{{ utilisateur.tel }}</td>
+                        <td>{{ utilisateur.rue }}</td>
+                        <td>{{ utilisateur.codePostal }}</td>
+                        <td>{{ utilisateur.email }}</td>
+                        <td>
+                            {% for role in utilisateur.roles %}
+                                <span class="badge bg-primary">{{ role }}</span>
+                            {% endfor %}
+                        </td>
+                        <td>
+                            {% if utilisateur.isVerified %}
+                                <span class="badge bg-success">Oui</span>
+                            {% else %}
+                                <span class="badge bg-danger">Non</span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            <div class="d-flex gap-2">
+                                <a href="{{ path('app_utilisateur_show', {'id': utilisateur.id}) }}"
+                                   class="btn btn-sm btn-info"
+                                   title="Voir">
+                                    <i class="bi bi-eye"></i>
+                                </a>
+                                <a href="{{ path('app_utilisateur_edit', {'id': utilisateur.id}) }}"
+                                   class="btn btn-sm btn-warning"
+                                   title="Modifier">
+                                    <i class="bi bi-pencil"></i>
+                                </a>
+                            </div>
+                        </td>
+                    </tr>
+                {% else %}
+                    <tr>
+                        <td colspan="11" class="text-center text-muted">Aucun utilisateur trouvé.</td>
+                    </tr>
+                {% endfor %}
+                </tbody>
+            </table>
+        </div>
+
+        <div class="navigation">
+            {{ knp_pagination_render(pagination) }}
+        </div>
+    </div>
 {% endblock %}

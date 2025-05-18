@@ -258,6 +258,29 @@ console.error('Erreur:', error);
 }
 });
 });
+document.querySelectorAll('.remove-item').forEach(button => {
+button.addEventListener('click', function () {
+const livreId = this.dataset.id;
+
+// Envoie de la requête fetch pour supprimer le livre
+fetch (`/panier/supprimer/${livreId}`, {
+method: 'POST',
+headers: {
+'Content-Type': 'application/json',
+'X-Requested-With': 'XMLHttpRequest'
+}
+}).then(response => response.json()).then(data => {
+if (data.success) { // Suppression de l'élément DOM du panier
+const itemElement = document.querySelector (`.panier-item[data-id="${livreId}"]`);
+if (itemElement) {
+itemElement.remove();
+}
+// Mise à jour du total et du compteur
+updateCartUI(data);
+}
+}).catch(error => console.error('Erreur lors de la suppression :', error));
+});
+});
 
 // Gestion de la suppression avec modal
 let currentItemToDelete = null;

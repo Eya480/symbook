@@ -52,7 +52,7 @@ class CategoriesType extends AbstractType
             ])
             ->add('Sauvgarder', SubmitType::class);
     }
-
+    
     public function configureOptions(OptionsResolver $resolver): void
     {
         $resolver->setDefaults([
